@@ -27,7 +27,7 @@ const CANVAS_HEIGHT = 320;
 const initialConfigs: ControllerConfig[] = [
   { name: 'No Control', kp: 0, ki: 0, kd: 0, color: '#64748b', enabled: true },
   { name: 'P Only', kp: 2.0, ki: 0, kd: 0, color: '#3b82f6', enabled: true },
-  { name: 'PI', kp: 2.0, ki: 0.5, kd: 0, color: '#22c55e', enabled: true },
+  { name: 'PD', kp: 2.0, ki: 0, kd: 0.8, color: '#a855f7', enabled: true },
   { name: 'PID', kp: 2.0, ki: 0.3, kd: 0.8, color: '#f59e0b', enabled: true },
 ];
 

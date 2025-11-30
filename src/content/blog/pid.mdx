@@ -8,9 +8,7 @@ tags: ["controls", "engineering", "interactive"]
 ---
 
 import MotorDemo from "../../components/pid/MotorDemo";
-import PController from "../../components/pid/PController";
-import PIController from "../../components/pid/PIController";
-import PIDController from "../../components/pid/PIDController";
+import PIDDemo from "../../components/pid/PIDDemo";
 import OvenController from "../../components/pid/OvenController";
 import InvertedPendulum from "../../components/pid/InvertedPendulum";
 import ComparisonPlayground from "../../components/pid/ComparisonPlayground";
@@ -52,24 +50,50 @@ $$
 
 Where **Error** = Target &minus; Current Position, and **Kp** is a gain that determines how aggressive the response is.
 
-<PController client:load initialKp={1.5} />
+<PIDDemo client:load initialKp={1.5} />
 
 Play with the Kp slider. Notice that there's a tradeoff:
 
 - **Too low**: The system is sluggish and may not even reach the target if there's any friction
 - **Too high**: The system overshoots and oscillates, potentially getting worse over time
+
 This is the fundamental limitation of proportional control. You're asking one number to do two jobs: respond quickly AND stop accurately. It can't do both.
 
+---
 
-You'll notice oscillation is still a major issue. We'll get to a way to solve that, but first we need to look at a problem that we've overlooked thus far.
+## Derivative Control: The "D" in PID
 
-### The Steady-State Error Problem
+The proportional term looks at where you are. But what if we could also look at **how fast you're approaching the target**? If you're racing toward the target at high speed, you should start braking early. If you're crawling toward it, you don't need as much braking.
 
-Now let's add a mass to the end of the pointer. Watch what happens&mdash;the pointer can't quite reach the target:
+This is what the **derivative term** does&mdash;it responds to the *rate of change* of the error.
 
-<PController client:load initialKp={2.0} showMass={true} initialMass={0.5} />
+<div className="py-6 my-6 text-center text-xl">
+$$
+\textcolor{#e879f9}{Output} \;\;=\;\; \textcolor{#60a5fa}{K_p} \cdot \textcolor{#f87171}{error} \;\;+\;\; \textcolor{#c084fc}{K_d} \cdot \textcolor{#f87171}{\frac{d(error)}{dt}}
+$$
+</div>
 
-This persistent gap is called **steady-state error**. The mass pulls the pointer down, and the P controller needs *some* error to generate enough force to hold the mass up. The heavier the mass, the bigger the error needed. Try adjusting the mass slider to see this effect&mdash;and notice how increasing Kp reduces the error but can't eliminate it entirely.
+If you're approaching the target quickly, the derivative term applies a braking force. It's like anticipatory braking: you don't wait until you're at the stop sign to brake&mdash;you start slowing down as you approach. The purple arrow shows the direction of motion&mdash;watch how the D term provides opposing force.
+
+<PIDDemo client:load enableD={true} enableNoise={true} initialKp={2.0} initialKd={0.8} />
+
+Notice how adding the D term dramatically reduces oscillation! The system now settles smoothly to the target instead of bouncing back and forth. Try setting Kd to 0 to see the difference&mdash;the oscillation returns immediately.
+
+### The Noise Problem
+
+Try enabling the **Noise** button to see why the D term can be problematic in real systems. Because D responds to *changes* in the error, it amplifies any sensor noise. In real applications, this often requires filtering the derivative signal or limiting D's contribution. This is why many practitioners recommend starting with just PI control and only adding D when necessary.
+
+---
+
+## The Steady-State Error Problem
+
+We've solved the oscillation problem with PD control, but there's another issue lurking. Let's add a mass to the end of the pointer. Watch what happens&mdash;the pointer can't quite reach the target:
+
+<PIDDemo client:load enableD={true} enableMass={true} initialKp={2.0} initialKd={0.8} initialMass={0.5} />
+
+This persistent gap is called **steady-state error**. The mass pulls the pointer down, and the PD controller needs *some* error to generate enough force to hold the mass up. The heavier the mass, the bigger the error needed. Try adjusting the mass slider to see this effect&mdash;and notice how increasing Kp reduces the error but can't eliminate it entirely.
+
+Neither P nor D can fix this problem. D only responds to *changes* in error&mdash;once the system has settled (even in the wrong place), there's no change to respond to. We need something else.
 
 ---
 
@@ -79,45 +103,39 @@ Here's the key insight: if the error persists, we should keep adding force. Even
 
 <div className="py-6 my-6 text-center text-xl">
 $$
-\textcolor{#e879f9}{Output} \;\;=\;\; \textcolor{#60a5fa}{K_p} \cdot \textcolor{#f87171}{error} \;\;+\;\; \textcolor{#4ade80}{K_i} \cdot \textcolor{#f87171}{\int error \, dt}
+\textcolor{#e879f9}{Output} \;\;=\;\; \textcolor{#60a5fa}{K_p} \cdot \textcolor{#f87171}{error} \;\;+\;\; \textcolor{#c084fc}{K_d} \cdot \textcolor{#f87171}{\frac{d(error)}{dt}} \;\;+\;\; \textcolor{#4ade80}{K_i} \cdot \textcolor{#f87171}{\int error \, dt}
 $$
 </div>
 
 Think of it like this: the integral term is *patient*. It doesn't care if the error is small right now. If that small error has been there for a while, the integral builds up and eventually overwhelms any disturbance.
 
-<PIController client:load />
+<PIDDemo client:load enableD={true} enableI={true} enableMass={true} enableNoise={true} initialKp={2.0} initialKd={0.8} initialKi={0.3} initialMass={0.5} />
 
-The integral term eliminates steady-state error beautifully. But there's a catch: it makes the oscillation problem *worse*. The integral keeps building up as we approach the target, and when we overshoot, it takes time for that accumulated value to unwind. This is called **integral windup**.
+The integral term eliminates steady-state error beautifully! Now the pointer reaches the target exactly, even with the mass pulling it down.
 
-Watch the integral accumulator bar on the right side&mdash;notice how it builds up when far from the target and takes time to settle back down.
+### Integral Windup
 
-Adding I solved one problem but exacerbated another. We still have that oscillation from proportional control&mdash;and now it's even more pronounced. We need something that looks ahead.
+But there's a catch: the integral term can cause problems of its own. When there's a large error for a long time (like during startup), the integral accumulates a huge value. Even after reaching the target, this "wound up" integral causes overshoot and slow settling. This is called **integral windup**.
+
+The demo above uses **clamping** to prevent windup&mdash;the integral is limited to a maximum value (±10 in this case). Other strategies include:
+
+- **Conditional integration**: Only accumulate integral when close to the target
+- **Back-calculation**: Reduce integral when output saturates
+- **Recency-weighted integration**: Give more weight to recent errors, letting old errors "decay"
+
+Each approach has tradeoffs, but clamping is the most common starting point.
 
 ---
 
-## Derivative Control: The "D" in PID
+## Summary: The Complete Picture
 
-The proportional term looks at where you are. The integral term looks at where you've been. The derivative term looks at where you're going&mdash;or more precisely, **how fast you're approaching the target**.
-
-<div className="py-6 my-6 text-center text-xl">
-$$
-\textcolor{#e879f9}{Output} \;\;=\;\; \textcolor{#60a5fa}{K_p} \cdot \textcolor{#f87171}{error} \;\;+\;\; \textcolor{#4ade80}{K_i} \cdot \textcolor{#f87171}{\int error \, dt} \;\;+\;\; \textcolor{#c084fc}{K_d} \cdot \textcolor{#f87171}{\frac{d(error)}{dt}}
-$$
-</div>
-
-If you're approaching the target quickly, the derivative term applies a braking force. It's like anticipatory braking: you don't wait until you're at the stop sign to brake&mdash;you start slowing down as you approach.
-
-<PIDController client:load />
-
-Now we have the complete picture. The purple arrow shows the rate of change&mdash;the D term provides "braking" force when you're moving fast toward the target.
-
-Try enabling the **Noise** button to see why the D term can be problematic in real systems&mdash;it amplifies sensor noise since it's responding to rapid changes.
+Now you've seen all three terms in action:
 
 | Term | Looks at | Effect | Fixes | Can cause |
 |------|----------|--------|-------|-----------|
 | **P** | Present error | Push toward target | Slow response | Overshoot, oscillation |
-| **I** | Past error (sum) | Eliminate steady-state error | Steady-state error | Windup, slow oscillation |
-| **D** | Future error (rate) | Brake before arrival | Overshoot | Sluggishness, noise sensitivity |
+| **D** | Future error (rate) | Brake before arrival | Overshoot, oscillation | Noise sensitivity |
+| **I** | Past error (sum) | Eliminate steady-state error | Steady-state error | Windup, slow response |
 
 ---
 
@@ -129,7 +147,7 @@ Here's a common tuning approach:
 
 1. **Start with just P**: Increase Kp until the system responds quickly but oscillates
 2. **Add D**: Increase Kd to dampen the oscillation until it just barely overshoots
-3. **Add I**: Increase Ki to eliminate any remaining steady-state error
+3. **Add I**: Increase Ki to eliminate any remaining steady-state error (use sparingly!)
 
 The full PID demo above is perfect for experimenting with this. Try starting with only Kp, then incrementally adding the other terms.
 
@@ -166,15 +184,15 @@ Try these experiments:
 
 ## Comparison Playground
 
-Finally, here's a playground where you can compare different control strategies side-by-side. Watch how No Control, P-only, PI, and full PID respond to the same target:
+Finally, here's a playground where you can compare different control strategies side-by-side. Watch how No Control, P-only, PD, and full PID respond to the same target:
 
 <ComparisonPlayground client:load />
 
 Try clicking "Random Target" repeatedly to see how each controller handles different step inputs. Notice how:
 - **No Control** just drifts with the disturbance
-- **P-only** gets close but maintains steady-state error
-- **PI** eliminates steady-state error but overshoots more
-- **PID** balances fast response with minimal overshoot
+- **P-only** gets close but oscillates
+- **PD** settles quickly but may have steady-state error with disturbances
+- **PID** balances fast response with minimal overshoot and no steady-state error
 
 ---
 
@@ -186,13 +204,13 @@ Let's recap the intuition we've built:
 - Good for: fast initial response
 - Bad at: reaching the target exactly (steady-state error), not overshooting
 
-**Integral (I)**: "If we've been wrong for a while, try harder"
-- Good for: eliminating persistent error, overcoming disturbances
-- Bad at: responding quickly (can cause slow oscillation and windup)
-
 **Derivative (D)**: "If we're approaching fast, start braking"
 - Good for: reducing overshoot, stabilizing oscillation
-- Bad at: handling noisy measurements, providing initial push
+- Bad at: handling noisy measurements
+
+**Integral (I)**: "If we've been wrong for a while, try harder"
+- Good for: eliminating persistent error, overcoming disturbances
+- Bad at: responding quickly (can cause windup and slow oscillation)
 
 The magic of PID is that these three simple terms, combined properly, can control an enormous variety of systems&mdash;from car engines to chemical plants to the autopilot in aircraft.
 
