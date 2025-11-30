@@ -68,7 +68,7 @@ $$
 $$
 </div>
 
-The $error$ is the difference between the target and current position, and $K_p$ is the proportional gain that determines how aggressive the response is.
+The $\textcolor{#f87171}{error}$ is the difference between the target and current position (or angle), and $\textcolor{#60a5fa}{K_p}$ is the proportional gain that determines how aggressive the response is.
 
 Here's how the control loop works:
 
@@ -76,14 +76,14 @@ Here's how the control loop works:
 
 These steps are repeated 60 times per second:
 1. **Measure** the current position (feedback)
-2. **Compute**: $error = target − current$
+2. **Compute**: $\textcolor{#f87171}{error} = \textcolor{#FA7315}{target} - \textcolor{#60a5fa}{current}$
 3. **Output**: torque command proportional to the error
 
 This creates a **closed-loop system**: the controller constantly adjusts based on what it observes. Now let's see it in action:
 
 <PIDDemo client:load initialKp={1.5} />
 
-Play with the $K_p$ slider and target angle. Notice that there's a tradeoff:
+Play with the $\textcolor{#60a5fa}{K_p}$ slider and target angle. Notice that there's a tradeoff:
 
 - **Too low**: Sluggish response, and any resistance will leave you stuck short of the target (steady-state error)
 - **Too high**: Fast response, but overshoots and oscillates—potentially unstable
@@ -108,7 +108,7 @@ If you're approaching the target quickly, the derivative term applies a braking 
 
 <PIDDemo client:load enableD={true} enableNoise={true} initialKp={2.0} initialKd={0.8} />
 
-Like magic, the oscillation is almost entirely gone! The system now settles smoothly to the target instead of bouncing back and forth. Try setting $K_d$ to 0 to see the difference: the oscillation returns immediately.
+Like magic, the oscillation is almost entirely gone! The system now settles smoothly to the target instead of bouncing back and forth. Try setting $\textcolor{#c084fc}{K_d}$ to 0 to see the difference: the oscillation returns immediately.
 
 <div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
 <div className="text-zinc-300 font-medium mb-1">Watch out for noise!</div>
@@ -123,7 +123,7 @@ We've solved the oscillation problem with PD control, but there's another issue 
 
 <PIDDemo client:load enableD={true} enableMass={true} initialKp={2.0} initialKd={0.8} initialMass={0.5} />
 
-This is **steady-state error**. Proportional control only pushes when there's error. To counteract the constant pull of gravity, some error must remain — otherwise there's nothing to push against. Higher $K_p$ shrinks the gap but can't close it.
+This is **steady-state error**. Proportional control only pushes when there's error. To counteract the constant pull of gravity, some error must remain — otherwise there's nothing to push against. Higher $\textcolor{#60a5fa}{K_p}$ shrinks the gap but can't close it.
 
 Neither P nor D can fix this problem. We need something that remembers the past and builds up force over time.
 
@@ -147,7 +147,7 @@ The integral term eliminates steady-state error beautifully! Now the pointer rea
 
 <div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
 <div className="text-zinc-300 font-medium mb-1">Watch out for integral windup!</div>
-<span className="text-zinc-400">You may notice that the system is not as responsive as before. Why not increase the integral gain $K_i$? Try increasing it and click the </span><span className="text-orange-400">lock icon</span><span className="text-zinc-400"> to block the motor, move the target, wait 5-10s, then release the lock. Watch the overshoot! The integral accumulated while blocked. We have to be careful not to increase $K_i$ too much, or the system will become unstable. We can use </span><span className="text-green-400">clamping</span><span className="text-zinc-400"> or some other techniques to limit this effect.</span>
+<span className="text-zinc-400">You may notice that the system is not as responsive as before. Why not increase the integral gain $\textcolor{#4ade80}{K_i}$? Try increasing it and click the </span><span className="text-orange-400">lock icon</span><span className="text-zinc-400"> to block the motor, move the target, wait 5-10s, then release the lock. Watch the overshoot! The integral accumulated while blocked. We have to be careful not to increase $\textcolor{#4ade80}{K_i}$ too much, or the system will become unstable. We can use </span><span className="text-green-400">clamping</span><span className="text-zinc-400"> or some other techniques to limit this effect.</span>
 </div>
 
 ---
@@ -206,8 +206,8 @@ If the cart drifts right, the position loop outputs a small **negative target an
 
 Now we have two control loops working together:
 
-1. **Angle Control** (Kp<sub>θ</sub>, Kd<sub>θ</sub>): Fast inner loop that keeps the pendulum at whatever angle it's told
-2. **Position Control** (Kp<sub>x</sub>, Kd<sub>x</sub>): Slower outer loop that adjusts that target angle to control cart position
+1. **Angle Control** ($\textcolor{#60a5fa}{K_p^\theta}$, $\textcolor{#c084fc}{K_d^\theta}$): Fast inner loop that keeps the pendulum at whatever angle it's told
+2. **Position Control** ($\textcolor{#60a5fa}{K_p^x}$, $\textcolor{#c084fc}{K_d^x}$): Slower outer loop that adjusts that target angle to control cart position
 
 The position controller adds a gentle bias to the angle controller's target, nudging the cart back toward center without destabilizing the balance. Try removing the derivative term from the angle controller and see how quickly the system becomes unstable.
 
@@ -229,7 +229,7 @@ Now you've seen all three terms in action:
 
 ## Tuning Challenge
 
-The art of PID control is choosing Kp, Ki, and Kd to work in harmony. Each system is different: the mass of the pointer, the power of the motor, the amount of friction all affect what gains work best.
+The art of PID control is choosing $\textcolor{#60a5fa}{K_p}$, $\textcolor{#4ade80}{K_i}$, and $\textcolor{#c084fc}{K_d}$ to work in harmony. Each system is different: the mass of the pointer, the power of the motor, the amount of friction all affect what gains work best.
 
 **Can you tune a PID controller?** Try to tune the controller for each challenge. Can you find values that work for all challenges?
 
