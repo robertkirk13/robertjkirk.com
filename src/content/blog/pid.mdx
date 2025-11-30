@@ -68,13 +68,13 @@ $$
 $$
 </div>
 
-Where  $error= Target - Current \: Position$, and $K_p$ is a gain that determines how aggressive the response is.
+$error$ is the difference between the target and current position, and $K_p$ is the proportional gain that determines how aggressive the response is.
 
 Here's how the control loop works:
 
 <ControlLoopDiagram client:load />
 
-The loop runs 60 times per second:
+These steps are repeated 60 times per second:
 1. **Measure** the current position (feedback)
 2. **Compute**: $error = target − current$
 3. **Output**: torque command proportional to the error
