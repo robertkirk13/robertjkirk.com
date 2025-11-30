@@ -172,19 +172,25 @@ export default function ComparisonPlayground() {
 			ctx.textAlign = "left";
 			ctx.fillText("Position over time", padding, 22);
 
-			// Legend
-			const legendX = width - 90;
-			let legendY = 24;
+			// Legend (top-left, inside graph area)
+			const legendX = padding + 10;
+			let legendY = padding + 18;
+			
+			// Background for legend
+			ctx.fillStyle = "rgba(10, 10, 10, 0.85)";
+			ctx.beginPath();
+			ctx.roundRect(legendX - 6, legendY - 14, 75, 88, 6);
+			ctx.fill();
+			
 			controllerConfigs.forEach((config) => {
 				ctx.fillStyle = config.color;
 				ctx.beginPath();
-				ctx.arc(legendX, legendY - 3, 5, 0, Math.PI * 2);
+				ctx.arc(legendX + 4, legendY - 3, 4, 0, Math.PI * 2);
 				ctx.fill();
-				ctx.fillStyle = config.color;
-				ctx.font = "12px monospace";
+				ctx.font = "11px monospace";
 				ctx.textAlign = "left";
-				ctx.fillText(config.name, legendX + 12, legendY + 1);
-				legendY += 20;
+				ctx.fillText(config.name, legendX + 14, legendY + 1);
+				legendY += 18;
 			});
 
 			// Target in legend
@@ -192,12 +198,12 @@ export default function ComparisonPlayground() {
 			ctx.lineWidth = 2;
 			ctx.setLineDash([4, 4]);
 			ctx.beginPath();
-			ctx.moveTo(legendX - 8, legendY - 3);
-			ctx.lineTo(legendX + 8, legendY - 3);
+			ctx.moveTo(legendX - 2, legendY - 3);
+			ctx.lineTo(legendX + 10, legendY - 3);
 			ctx.stroke();
 			ctx.setLineDash([]);
 			ctx.fillStyle = "#f97316";
-			ctx.fillText("Target", legendX + 12, legendY + 1);
+			ctx.fillText("Target", legendX + 14, legendY + 1);
 		},
 		[],
 	);
@@ -457,8 +463,12 @@ export default function ComparisonPlayground() {
 							strokeLinecap="round"
 							strokeLinejoin="round"
 						>
-							<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-							<circle cx="12" cy="12" r="4" />
+							<rect x="2" y="2" width="20" height="20" rx="2" />
+							<circle cx="8" cy="8" r="1.5" fill="currentColor" />
+							<circle cx="16" cy="8" r="1.5" fill="currentColor" />
+							<circle cx="8" cy="16" r="1.5" fill="currentColor" />
+							<circle cx="16" cy="16" r="1.5" fill="currentColor" />
+							<circle cx="12" cy="12" r="1.5" fill="currentColor" />
 						</svg>
 					</button>
 				</div>

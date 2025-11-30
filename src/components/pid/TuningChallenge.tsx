@@ -149,11 +149,14 @@ export default function TuningChallenge() {
 			ctx.fillStyle = "#0a0a0a";
 			ctx.fillRect(0, 0, width, height);
 
-			// Motor body
+			// Motor body (black dial)
 			ctx.beginPath();
 			ctx.arc(centerX, centerY, radius + 12, 0, Math.PI * 2);
-			ctx.fillStyle = "#1e293b";
+			ctx.fillStyle = "#000000";
 			ctx.fill();
+			ctx.strokeStyle = "#27272a";
+			ctx.lineWidth = 2;
+			ctx.stroke();
 
 			// Tick marks
 			for (let deg = 0; deg <= 180; deg += 15) {

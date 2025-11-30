@@ -217,18 +217,35 @@ export default function PIDDemo({
 			ctx.lineWidth = 4;
 			ctx.stroke();
 
-			// Draw mouse guide line
+			// Draw preview indicator on arc showing where clicking would set target
 			if (isInCanvasLocal && !isDraggingLocal && mousePosLocal) {
-				const targetX = centerX + Math.cos(-target) * (radius + 25);
-				const targetY = centerY + Math.sin(-target) * (radius + 25);
+				// Calculate angle from mouse position
+				const mx = mousePosLocal.x - centerX;
+				const my = mousePosLocal.y - centerY;
+				let previewAngle = -Math.atan2(my, mx);
+				// Clamp to valid range
+				previewAngle = Math.max(MIN_ANGLE, Math.min(MAX_ANGLE, previewAngle));
+
+				// Draw small indicator on the arc
+				const indicatorX = centerX + Math.cos(-previewAngle) * (radius + 8);
+				const indicatorY = centerY + Math.sin(-previewAngle) * (radius + 8);
+
+				// Small tick mark perpendicular to arc
+				const tickLength = 12;
+				const tickAngle = -previewAngle;
 				ctx.beginPath();
-				ctx.moveTo(mousePosLocal.x, mousePosLocal.y);
-				ctx.lineTo(targetX, targetY);
-				ctx.strokeStyle = "rgba(251, 146, 60, 0.3)";
-				ctx.lineWidth = 2;
-				ctx.setLineDash([5, 5]);
+				ctx.moveTo(
+					indicatorX - (Math.cos(tickAngle) * tickLength) / 2,
+					indicatorY - (Math.sin(tickAngle) * tickLength) / 2,
+				);
+				ctx.lineTo(
+					indicatorX + (Math.cos(tickAngle) * tickLength) / 2,
+					indicatorY + (Math.sin(tickAngle) * tickLength) / 2,
+				);
+				ctx.strokeStyle = "rgba(251, 146, 60, 0.6)";
+				ctx.lineWidth = 3;
+				ctx.lineCap = "round";
 				ctx.stroke();
-				ctx.setLineDash([]);
 			}
 
 			// Draw velocity indicator (D term visualization) - only if D is enabled

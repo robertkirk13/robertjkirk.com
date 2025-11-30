@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 
 interface PendulumState {
-	cartX: number;
-	cartVelocity: number;
+  cartX: number;
+  cartVelocity: number;
 	angle: number;
-	angularVelocity: number;
+  angularVelocity: number;
 }
 
 const CART_MASS = 1.0;
@@ -41,12 +41,12 @@ interface Props {
 
 export default function InvertedPendulum({ showPositionControl = true }: Props) {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const [state, setState] = useState<PendulumState>({
-		cartX: 0,
-		cartVelocity: 0,
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [state, setState] = useState<PendulumState>({
+    cartX: 0,
+    cartVelocity: 0,
 		angle: 0.05,
-		angularVelocity: 0,
+    angularVelocity: 0,
 	});
 	const stateRef = useRef<PendulumState>(state);
 	
@@ -61,16 +61,16 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 	// Target position for position control
 	const [targetX, setTargetX] = useState(0);
 	
-	const [isRunning, setIsRunning] = useState(true);
+  const [isRunning, setIsRunning] = useState(true);
 	const [isVisible, setIsVisible] = useState(true);
-	const [hasFallen, setHasFallen] = useState(false);
+  const [hasFallen, setHasFallen] = useState(false);
 	const [failReason, setFailReason] = useState<string>("");
-	const [controlEnabled, setControlEnabled] = useState(true);
+  const [controlEnabled, setControlEnabled] = useState(true);
 	const [force, setForce] = useState(0);
 	const [isHoveringCart, setIsHoveringCart] = useState(false);
 	const [isHoveringTarget, setIsHoveringTarget] = useState(false);
 	const [isDraggingTarget, setIsDraggingTarget] = useState(false);
-	const animationRef = useRef<number>();
+  const animationRef = useRef<number>();
 
 	const simulate = useCallback(
 		(
@@ -86,7 +86,7 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 
 			// Dual PD control
 			let controlForce = 0;
-			if (control) {
+    if (control) {
 				// Angle control: keep pendulum upright (angle = 0)
 				const angleForce = kpA * angle + kdA * angularVelocity;
 				
@@ -104,7 +104,7 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 			const sinA = Math.sin(angle);
 			const cosA = Math.cos(angle);
 			const ml = PENDULUM_MASS * PENDULUM_LENGTH;
-			const totalMass = CART_MASS + PENDULUM_MASS;
+    const totalMass = CART_MASS + PENDULUM_MASS;
 
 			const temp =
 				(controlForce +
@@ -121,11 +121,11 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 			const newAngularVelocity = angularVelocity + angularAccel * DT;
 			const newAngle = angle + newAngularVelocity * DT;
 
-			return {
-				cartX: newCartX,
-				cartVelocity: newCartVelocity,
-				angle: newAngle,
-				angularVelocity: newAngularVelocity,
+    return {
+      cartX: newCartX,
+      cartVelocity: newCartVelocity,
+      angle: newAngle,
+      angularVelocity: newAngularVelocity,
 			};
 		},
 		[],
@@ -149,10 +149,10 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 
 			ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 			ctx.fillStyle = "#0a0a0a";
-			ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, width, height);
 
 			const groundY = height * 0.75;
-			const centerX = width / 2;
+    const centerX = width / 2;
 
 			// Track
 			ctx.fillStyle = "#1e293b";
@@ -219,7 +219,7 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 
 			// Only draw cart if on track
 			if (!fallen || reason !== "Off track!") {
-				// Cart shadow
+    // Cart shadow
 				ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
 				ctx.beginPath();
 				ctx.roundRect(
@@ -231,7 +231,7 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 				);
 				ctx.fill();
 
-				// Cart body
+    // Cart body
 				const cartGradient = ctx.createLinearGradient(
 					cartScreenX - cartWidth / 2,
 					groundY - cartHeight,
@@ -256,20 +256,20 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 				);
 				ctx.fill();
 				ctx.strokeStyle = hoveringCart && !fallen ? "#fdba74" : "#71717a";
-				ctx.lineWidth = 2;
+    ctx.lineWidth = 2;
 				ctx.stroke();
 
-				// Wheels
+    // Wheels
 				ctx.fillStyle = "#1e293b";
-				ctx.beginPath();
+    ctx.beginPath();
 				ctx.arc(cartScreenX - 15, groundY, 6, 0, Math.PI * 2);
-				ctx.fill();
-				ctx.beginPath();
+    ctx.fill();
+    ctx.beginPath();
 				ctx.arc(cartScreenX + 15, groundY, 6, 0, Math.PI * 2);
-				ctx.fill();
+    ctx.fill();
 
-				// Pendulum
-				const pendulumBaseY = groundY - cartHeight;
+    // Pendulum
+    const pendulumBaseY = groundY - cartHeight;
 				const pendulumTipX =
 					cartScreenX + Math.sin(pendulumState.angle) * PENDULUM_LENGTH * SCALE;
 				const pendulumTipY =
@@ -277,25 +277,25 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 					Math.cos(pendulumState.angle) * PENDULUM_LENGTH * SCALE;
 
 				// Pendulum shadow
-				ctx.beginPath();
+    ctx.beginPath();
 				ctx.moveTo(cartScreenX + 2, pendulumBaseY + 2);
 				ctx.lineTo(pendulumTipX + 2, pendulumTipY + 2);
 				ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
 				ctx.lineWidth = 8;
 				ctx.lineCap = "round";
-				ctx.stroke();
+    ctx.stroke();
 
-				// Pendulum rod
-				ctx.beginPath();
-				ctx.moveTo(cartScreenX, pendulumBaseY);
-				ctx.lineTo(pendulumTipX, pendulumTipY);
+    // Pendulum rod
+    ctx.beginPath();
+    ctx.moveTo(cartScreenX, pendulumBaseY);
+    ctx.lineTo(pendulumTipX, pendulumTipY);
 				ctx.strokeStyle = "#3b82f6";
 				ctx.lineWidth = 6;
 				ctx.lineCap = "round";
-				ctx.stroke();
+    ctx.stroke();
 
 				// Pendulum bob
-				ctx.beginPath();
+    ctx.beginPath();
 				ctx.arc(pendulumTipX, pendulumTipY, 10, 0, Math.PI * 2);
 				const bobGradient = ctx.createRadialGradient(
 					pendulumTipX - 3,
@@ -308,49 +308,46 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 				bobGradient.addColorStop(0, "#60a5fa");
 				bobGradient.addColorStop(1, "#3b82f6");
 				ctx.fillStyle = bobGradient;
-				ctx.fill();
+    ctx.fill();
 
 				// Pivot
-				ctx.beginPath();
+    ctx.beginPath();
 				ctx.arc(cartScreenX, pendulumBaseY, 4, 0, Math.PI * 2);
 				ctx.fillStyle = "#27272a";
-				ctx.fill();
+    ctx.fill();
 
-				// Force arrow
+    // Force arrow
 				if (Math.abs(currentForce) > 0.5 && !fallen) {
 					const arrowLength = currentForce * 2.5;
 					const arrowY = groundY - cartHeight / 2;
 
-					ctx.beginPath();
+      ctx.beginPath();
 					ctx.moveTo(cartScreenX, arrowY);
 					ctx.lineTo(cartScreenX + arrowLength, arrowY);
 					ctx.strokeStyle = currentForce > 0 ? "#22c55e" : "#ef4444";
 					ctx.lineWidth = 3;
 					ctx.lineCap = "round";
-					ctx.stroke();
-
+      ctx.stroke();
+      
 					const arrowDir = Math.sign(currentForce);
-					ctx.beginPath();
+      ctx.beginPath();
 					ctx.moveTo(cartScreenX + arrowLength, arrowY);
 					ctx.lineTo(cartScreenX + arrowLength - 8 * arrowDir, arrowY - 6);
 					ctx.lineTo(cartScreenX + arrowLength - 8 * arrowDir, arrowY + 6);
-					ctx.closePath();
+      ctx.closePath();
 					ctx.fillStyle = currentForce > 0 ? "#22c55e" : "#ef4444";
-					ctx.fill();
+      ctx.fill();
 				}
 			}
 
-			// Fallen overlay
+			// Fallen overlay (just the darkening - button is HTML)
 			if (fallen) {
 				ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
 				ctx.fillRect(0, 0, width, height);
 				ctx.fillStyle = "#ef4444";
 				ctx.font = "bold 24px sans-serif";
 				ctx.textAlign = "center";
-				ctx.fillText(reason, width / 2, height / 2 - 10);
-				ctx.fillStyle = "#94a3b8";
-				ctx.font = "14px monospace";
-				ctx.fillText("Press reset to try again", width / 2, height / 2 + 18);
+				ctx.fillText(reason, width / 2, height / 2 - 30);
 			}
 		},
 		[],
@@ -365,15 +362,15 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 		return () => {
 			if (containerRef.current) observer.unobserve(containerRef.current);
 		};
-	}, []);
+  }, []);
 
-	useEffect(() => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 		const ctx = canvas.getContext("2d");
 		if (!ctx || !isVisible) return;
 
-		const loop = () => {
+    const loop = () => {
 			if (isRunning && !hasFallen && !isDraggingTarget) {
 				const newState = simulate(
 					stateRef.current,
@@ -392,15 +389,15 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 					setHasFallen(true);
 					setFailReason("Fallen!");
 				} else if (Math.abs(newState.cartX) > TRACK_WIDTH / 2) {
-					setHasFallen(true);
+          setHasFallen(true);
 					setFailReason("Off track!");
 				}
 			}
 			draw(ctx, stateRef.current, force, hasFallen, failReason, isHoveringCart, targetX, isHoveringTarget, isDraggingTarget, showPositionControl);
-			animationRef.current = requestAnimationFrame(loop);
-		};
-		animationRef.current = requestAnimationFrame(loop);
-		return () => {
+      animationRef.current = requestAnimationFrame(loop);
+    };
+    animationRef.current = requestAnimationFrame(loop);
+    return () => {
 			if (animationRef.current) cancelAnimationFrame(animationRef.current);
 		};
 	}, [simulate, draw, isRunning, isVisible, kpAngle, kdAngle, kpPos, kdPos, controlEnabled, hasFallen, force, failReason, isHoveringCart, showPositionControl, targetX, isHoveringTarget, isDraggingTarget]);
@@ -488,16 +485,16 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 		}
 	};
 
-	const handleReset = () => {
+  const handleReset = () => {
 		const initialState = {
-			cartX: 0,
-			cartVelocity: 0,
-			angle: 0.05,
-			angularVelocity: 0,
+      cartX: 0,
+      cartVelocity: 0,
+      angle: 0.05,
+      angularVelocity: 0,
 		};
 		stateRef.current = initialState;
 		setState(initialState);
-		setHasFallen(false);
+    setHasFallen(false);
 		setFailReason("");
 		setKpAngle(DEFAULT_KP_ANGLE);
 		setKdAngle(DEFAULT_KD_ANGLE);
@@ -512,27 +509,56 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 
 	const angleDeg = (state.angle * 180) / Math.PI;
 
-	return (
+  return (
 		<div
 			ref={containerRef}
 			className="not-prose flex flex-col gap-4 p-6 bg-zinc-950 w-full rounded-3xl"
 		>
 			<div className="flex flex-col items-center min-w-0">
-				<canvas
-					ref={canvasRef}
-					width={CANVAS_WIDTH * DPR}
-					height={CANVAS_HEIGHT * DPR}
-					className="outline-none border-0 block w-full max-w-[500px]"
-					style={{
-						aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`,
-						cursor: isHoveringTarget || isDraggingTarget ? "grab" : isHoveringCart ? "pointer" : "default",
-					}}
-					onMouseDown={handleMouseDown}
-					onMouseMove={handleMouseMove}
-					onMouseUp={handleMouseUp}
-					onMouseLeave={handleMouseLeave}
-					onClick={handleClick}
-				/>
+				<div className="relative w-full max-w-[500px]">
+      <canvas
+        ref={canvasRef}
+						width={CANVAS_WIDTH * DPR}
+						height={CANVAS_HEIGHT * DPR}
+						className="outline-none border-0 block w-full"
+						style={{
+							aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`,
+							cursor: isHoveringTarget || isDraggingTarget ? "grab" : isHoveringCart ? "pointer" : "default",
+						}}
+						onMouseDown={handleMouseDown}
+						onMouseMove={handleMouseMove}
+						onMouseUp={handleMouseUp}
+						onMouseLeave={handleMouseLeave}
+						onClick={handleClick}
+					/>
+					{hasFallen && (
+						<div 
+							className="absolute inset-0 flex items-center justify-center z-10"
+						>
+							<button
+								type="button"
+								onClick={handleReset}
+								className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 text-white rounded-xl transition-all flex items-center gap-2 font-medium mt-8 cursor-pointer shadow-lg"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="20"
+									height="20"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								>
+									<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+									<path d="M3 3v5h5" />
+								</svg>
+								Reset
+							</button>
+						</div>
+					)}
+				</div>
 				<p
 					className={`text-xs mt-2 transition-colors ${isHoveringTarget || isDraggingTarget ? "text-orange-400" : isHoveringCart ? "text-orange-400" : "text-zinc-500"}`}
 				>
@@ -546,7 +572,7 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 			{/* Angle Control */}
 			<div className={`flex flex-col gap-2 px-2 ${!showPositionControl ? 'pb-2' : ''}`}>
 				<div className="text-xs text-zinc-400 font-mono">{showPositionControl ? 'Angle Control' : 'PD Control'}</div>
-				<div className="flex items-center gap-4">
+        <div className="flex items-center gap-4">
 					<label className="text-sm font-mono text-blue-400 w-12">{showPositionControl ? <>Kp<sub>θ</sub></> : 'Kp'}</label>
 					<div className="flex-1 relative h-2">
 						<div className="absolute inset-0 bg-zinc-800 rounded-lg" />
@@ -554,11 +580,11 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 							className="absolute left-0 top-0 h-full bg-blue-500 rounded-lg"
 							style={{ width: `${(kpAngle / 100) * 100}%` }}
 						/>
-						<input
-							type="range"
-							min="0"
-							max="100"
-							step="1"
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
 							value={kpAngle}
 							onChange={(e) => setKpAngle(parseFloat(e.target.value))}
 							className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -574,8 +600,8 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 					>
 						{kpAngle}
 					</span>
-				</div>
-				<div className="flex items-center gap-4">
+        </div>
+        <div className="flex items-center gap-4">
 					<label className="text-sm font-mono text-purple-400 w-12">{showPositionControl ? <>Kd<sub>θ</sub></> : 'Kd'}</label>
 					<div className="flex-1 relative h-2">
 						<div className="absolute inset-0 bg-zinc-800 rounded-lg" />
@@ -583,9 +609,9 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 							className="absolute left-0 top-0 h-full bg-purple-500 rounded-lg"
 							style={{ width: `${(kdAngle / 30) * 100}%` }}
 						/>
-						<input
-							type="range"
-							min="0"
+          <input
+            type="range"
+            min="0"
 							max="30"
 							step="0.5"
 							value={kdAngle}
@@ -603,8 +629,8 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 					>
 						{kdAngle}
 					</span>
-				</div>
-			</div>
+        </div>
+      </div>
 
 			{/* Position Control - only shown if prop is true */}
 			{showPositionControl && (
@@ -673,9 +699,9 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 
 			<div className="flex justify-between items-center flex-wrap gap-3">
 				<div className="flex gap-2 items-center">
-					<button
+        <button
 						type="button"
-						onClick={handleReset}
+          onClick={handleReset}
 						className="p-2.5 bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-300 rounded-xl transition-all"
 						title="Reset"
 					>
@@ -693,10 +719,10 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 							<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
 							<path d="M3 3v5h5" />
 						</svg>
-					</button>
-					<button
+        </button>
+        <button
 						type="button"
-						onClick={() => setIsRunning(!isRunning)}
+          onClick={() => setIsRunning(!isRunning)}
 						className={`p-2.5 rounded-xl transition-all ${isRunning ? "bg-amber-600 hover:bg-amber-500 active:bg-amber-400 text-white" : "bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-400 text-white"}`}
 						title={isRunning ? "Pause" : "Play"}
 					>
@@ -730,10 +756,10 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 								<polygon points="5 3 19 12 5 21 5 3" fill="currentColor" />
 							</svg>
 						)}
-					</button>
-					<button
+        </button>
+        <button
 						type="button"
-						onClick={() => setControlEnabled(!controlEnabled)}
+          onClick={() => setControlEnabled(!controlEnabled)}
 						className={`p-2.5 rounded-xl transition-all ${controlEnabled ? "bg-green-600 hover:bg-green-500 active:bg-green-400 text-white" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-300"}`}
 						title={controlEnabled ? "Control ON" : "Control OFF"}
 					>
@@ -760,8 +786,8 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 								<circle cx="12" cy="12" r="3" fill="currentColor" />
 							)}
 						</svg>
-					</button>
-				</div>
+        </button>
+      </div>
 				<div className="flex gap-2 font-mono text-xs">
 					<div className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center w-[60px]">
 						<span className="text-zinc-500 text-[10px]">Angle</span>
@@ -813,6 +839,6 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 					</div>
 				</div>
 			</div>
-		</div>
-	);
+    </div>
+  );
 }
