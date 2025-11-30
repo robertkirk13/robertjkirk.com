@@ -6,7 +6,7 @@ import { SEO } from "astro-seo";
 import { ClientRouter } from "astro:transitions";
 
 interface Props {
-  head?: any;
+	head?: any;
 }
 ---
 
@@ -15,30 +15,31 @@ interface Props {
   lang="en"
   class="bg-gray-100 dark:bg-zinc-950"
   transition:name="root"
-  transition:animate="none"
+  transition:animate="fade"
 >
-  <div class="stripes">
-    <head>
-      <slot name="head" />
-
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width" />
-      <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-      <meta name="generator" content={Astro.generator} />
-      <title>Robert Kirk</title>
-      <!-- Cloudflare Web Analytics -->
-      <script
-        defer
-        src="https://static.cloudflareinsights.com/beacon.min.js"
-        data-cf-beacon='{"token": "33eee5331e1d41cd9abfa65cefddfc8a"}'></script>
-    </head>
-    <body class="">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+    <meta name="generator" content={Astro.generator} />
+    <title>Robert Kirk</title>
+    <slot name="head" />
+    <!-- Cloudflare Web Analytics -->
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "33eee5331e1d41cd9abfa65cefddfc8a"}'></script>
+  </head>
+  <body class="">
+    <div class="stripes"></div>
       <a
         href="/"
         aria-label="rk logo"
         data-astro-prefetch
-        transition:animate="none"
         class="fixed z-50 left-4 top-4 xl:left-8 xl:top-8 scale-75 sm:scale-100 transition-all antialiased hover:scale-[1.02]"
+        transition:name="logo"
+        transition:animate="slide"
       >
         <svg
           width="60"
@@ -71,6 +72,8 @@ interface Props {
         <div class="w-fit mx-auto xl:mx-0">
           <header
             class="bg-white/30 dark:bg-white/5 backdrop-blur-md rounded-full shadow-md border border-white/20 dark:border-white/5 transition-all duration-300 hover:bg-white/70 dark:hover:bg-white/10 dark:text-neutral-300"
+            transition:name="navigation"
+            transition:animate="slide"
           >
             <!-- Navigation - vertical on desktop, horizontal on mobile -->
             <nav
@@ -195,9 +198,13 @@ interface Props {
       </div>
       <div class="xl:h-0 h-16 transition-all" transition:animate="slide"></div>
 
-      <slot />
+      <main transition:name="main-content" transition:animate="fade">
+        <slot />
+      </main>
       <footer
         class="relative max-w-5xl mx-auto w-full mt-8 py-4 border-t border-gray-300 text-gray-300 dark:text-zinc-700 dark:border-zinc-700"
+        transition:name="footer"
+        transition:animate="slide"
       >
         <div
           class="flex flex-row justify-between px-4 lg:px-0 gap-12 transition-all"
@@ -230,8 +237,37 @@ interface Props {
           />
         </div>
       </footer>
+      <ClientRouter />
+      
+      <!-- View Transitions Enhancement Script -->
+      <script>
+        document.addEventListener("astro:before-preparation", () => {
+          // Add loading class to body for potential loading indicators
+          document.body.classList.add("astro-loading");
+        });
+
+        document.addEventListener("astro:after-preparation", () => {
+          // Remove loading class
+          document.body.classList.remove("astro-loading");
+        });
+
+        document.addEventListener("astro:before-swap", (event) => {
+          // Preserve scroll position for back/forward navigation
+          if (event.direction === 'back' || event.direction === 'forward') {
+            const scrollY = window.scrollY;
+            event.newDocument.addEventListener('DOMContentLoaded', () => {
+              window.scrollTo(0, scrollY);
+            });
+          }
+        });
+
+        document.addEventListener("astro:page-load", () => {
+          // Re-initialize any client-side functionality if needed
+          // This runs on both initial load and navigation
+          console.log("Page loaded with view transitions");
+        });
+      </script>
     </body>
-  </div>
 
   <style>
     html,
@@ -269,6 +305,75 @@ interface Props {
       );
 
       z-index: -1;
+    }
+
+    /* View Transitions Styles */
+    @media (prefers-reduced-motion: no-preference) {
+      /* Custom view transitions */
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation-duration: 0.3s;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      ::view-transition-old(main-content) {
+        animation: fade-out 0.2s ease-out;
+      }
+
+      ::view-transition-new(main-content) {
+        animation: fade-in 0.3s ease-in 0.1s both;
+      }
+
+      ::view-transition-old(navigation),
+      ::view-transition-new(navigation) {
+        animation-duration: 0.4s;
+        animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+
+      ::view-transition-old(logo),
+      ::view-transition-new(logo) {
+        animation-duration: 0.5s;
+        animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+    }
+
+    /* Fallback animations for browsers without View Transitions API */
+    @keyframes fade-out {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slide-up {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes slide-down {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Apply fallback animations when no view transitions */
+    html:not(.astro-client-router) [transition\:animate="fade"] {
+      animation: fade-in 0.3s ease-out;
+    }
+
+    html:not(.astro-client-router) [transition\:animate="slide"] {
+      animation: slide-up 0.4s ease-out;
+    }
+
+    /* Loading state styles */
+    body.astro-loading {
+      cursor: wait;
+    }
+
+    body.astro-loading * {
+      pointer-events: none;
     }
   </style>
 

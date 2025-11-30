@@ -1,0 +1,214 @@
+---
+title: "Understanding PID Controllers"
+date: "2025-11-30"
+formattedDate: "November 30, 2025"
+description: "An interactive exploration of proportional, integral, and derivative control systems."
+readingTime: 12
+tags: ["controls", "engineering", "interactive"]
+---
+
+import MotorDemo from "../../components/pid/MotorDemo";
+import PController from "../../components/pid/PController";
+import PIController from "../../components/pid/PIController";
+import PIDController from "../../components/pid/PIDController";
+import OvenController from "../../components/pid/OvenController";
+import InvertedPendulum from "../../components/pid/InvertedPendulum";
+import ComparisonPlayground from "../../components/pid/ComparisonPlayground";
+
+You've probably used a PID controller today without knowing it. They're in your car's cruise control, your home thermostat, the quadcopter you flew last weekend, and the robotic arm that assembled your phone. PID controllers are everywhere because they solve a fundamental problem: **how do you get something to go where you want it to go, and stay there?**
+
+<div className="flex items-center gap-3 px-4 py-3 bg-orange-950/30 border border-orange-900/50 rounded-xl my-6">
+  <div className="w-5 h-5 rounded-full bg-orange-500 flex-shrink-0 shadow-lg shadow-orange-500/30 cursor-grab active:cursor-grabbing hover:bg-orange-400 transition-colors" />
+  <span className="text-orange-300/90 text-sm">
+    <span className="text-orange-400 font-medium">Orange elements are interactive</span> &mdash; drag them to explore!
+  </span>
+</div>
+
+In this post, we're going to build an intuition for how PID controllers work. We'll start with the simplest possible controller and gradually add complexity. By the end, you'll understand not just *what* each term does, but *why* it's needed.
+
+---
+
+## The Problem: Turning a Motor
+
+Let's start with something concrete. Imagine you have a motor attached to a <span className="text-blue-400 italic font-semibold text-[1.1em]" style={{fontFamily: '"Times New Roman", Georgia, serif'}}>pointer</span>, like a compass needle. Your job is to make the pointer point at a <span className="text-orange-400 italic font-semibold text-[1.1em]" style={{fontFamily: '"Times New Roman", Georgia, serif'}}>target</span> angle. Sounds simple enough: just tell the motor to turn until it reaches the target, right?
+
+The catch is **inertia**. The pointer has mass, and mass doesn't like to change direction. If you're spinning toward the target and cut the power when you arrive, you'll overshoot. The momentum you built up carries you past where you wanted to stop.
+
+<MotorDemo client:load />
+
+See the problem? The motor has no idea it should slow down as it approaches the target. It's running at full speed right up until it arrives, then wondering why it can't stop. We need something smarter.
+
+---
+
+## Proportional Control: The "P" in PID
+
+The first insight is simple: **the further you are from the target, the harder you should push**. If you're 90° away, apply a lot of power. If you're only 2° away, apply just a little. This is called **proportional control** because the output is proportional to the error.
+
+<div className="py-6 my-6 text-center text-xl">
+$$
+\textcolor{#e879f9}{Output} \;\;=\;\; \textcolor{#60a5fa}{K_p} \cdot \textcolor{#f87171}{error}
+$$
+</div>
+
+Where **Error** = Target &minus; Current Position, and **Kp** is a gain that determines how aggressive the response is.
+
+<PController client:load initialKp={1.5} />
+
+Play with the Kp slider. Notice that there's a tradeoff:
+
+- **Too low**: The system is sluggish and may not even reach the target if there's any friction
+- **Too high**: The system overshoots and oscillates, potentially getting worse over time
+This is the fundamental limitation of proportional control. You're asking one number to do two jobs: respond quickly AND stop accurately. It can't do both.
+
+
+You'll notice oscillation is still a major issue. We'll get to a way to solve that, but first we need to look at a problem that we've overlooked thus far.
+
+### The Steady-State Error Problem
+
+Now let's add a mass to the end of the pointer. Watch what happens&mdash;the pointer can't quite reach the target:
+
+<PController client:load initialKp={2.0} showMass={true} initialMass={0.5} />
+
+This persistent gap is called **steady-state error**. The mass pulls the pointer down, and the P controller needs *some* error to generate enough force to hold the mass up. The heavier the mass, the bigger the error needed. Try adjusting the mass slider to see this effect&mdash;and notice how increasing Kp reduces the error but can't eliminate it entirely.
+
+---
+
+## Integral Control: The "I" in PID
+
+Here's the key insight: if the error persists, we should keep adding force. Even a small error, given enough time, should result in a large correction. This is what the **integral term** does&mdash;it sums up all the past errors.
+
+<div className="py-6 my-6 text-center text-xl">
+$$
+\textcolor{#e879f9}{Output} \;\;=\;\; \textcolor{#60a5fa}{K_p} \cdot \textcolor{#f87171}{error} \;\;+\;\; \textcolor{#4ade80}{K_i} \cdot \textcolor{#f87171}{\int error \, dt}
+$$
+</div>
+
+Think of it like this: the integral term is *patient*. It doesn't care if the error is small right now. If that small error has been there for a while, the integral builds up and eventually overwhelms any disturbance.
+
+<PIController client:load />
+
+The integral term eliminates steady-state error beautifully. But there's a catch: it makes the oscillation problem *worse*. The integral keeps building up as we approach the target, and when we overshoot, it takes time for that accumulated value to unwind. This is called **integral windup**.
+
+Watch the integral accumulator bar on the right side&mdash;notice how it builds up when far from the target and takes time to settle back down.
+
+Adding I solved one problem but exacerbated another. We still have that oscillation from proportional control&mdash;and now it's even more pronounced. We need something that looks ahead.
+
+---
+
+## Derivative Control: The "D" in PID
+
+The proportional term looks at where you are. The integral term looks at where you've been. The derivative term looks at where you're going&mdash;or more precisely, **how fast you're approaching the target**.
+
+<div className="py-6 my-6 text-center text-xl">
+$$
+\textcolor{#e879f9}{Output} \;\;=\;\; \textcolor{#60a5fa}{K_p} \cdot \textcolor{#f87171}{error} \;\;+\;\; \textcolor{#4ade80}{K_i} \cdot \textcolor{#f87171}{\int error \, dt} \;\;+\;\; \textcolor{#c084fc}{K_d} \cdot \textcolor{#f87171}{\frac{d(error)}{dt}}
+$$
+</div>
+
+If you're approaching the target quickly, the derivative term applies a braking force. It's like anticipatory braking: you don't wait until you're at the stop sign to brake&mdash;you start slowing down as you approach.
+
+<PIDController client:load />
+
+Now we have the complete picture. The purple arrow shows the rate of change&mdash;the D term provides "braking" force when you're moving fast toward the target.
+
+Try enabling the **Noise** button to see why the D term can be problematic in real systems&mdash;it amplifies sensor noise since it's responding to rapid changes.
+
+| Term | Looks at | Effect | Fixes | Can cause |
+|------|----------|--------|-------|-----------|
+| **P** | Present error | Push toward target | Slow response | Overshoot, oscillation |
+| **I** | Past error (sum) | Eliminate steady-state error | Steady-state error | Windup, slow oscillation |
+| **D** | Future error (rate) | Brake before arrival | Overshoot | Sluggishness, noise sensitivity |
+
+---
+
+## Tuning: Making It All Work Together
+
+The art of PID control is choosing Kp, Ki, and Kd to work in harmony. Each system is different&mdash;the mass of the pointer, the power of the motor, the amount of friction&mdash;all affect what gains work best.
+
+Here's a common tuning approach:
+
+1. **Start with just P**: Increase Kp until the system responds quickly but oscillates
+2. **Add D**: Increase Kd to dampen the oscillation until it just barely overshoots
+3. **Add I**: Increase Ki to eliminate any remaining steady-state error
+
+The full PID demo above is perfect for experimenting with this. Try starting with only Kp, then incrementally adding the other terms.
+
+---
+
+## Beyond the Pointer: Temperature Control
+
+Let's see how the same principles apply to a completely different system: controlling the temperature of an oven. This is closer to what you'd find in a real kitchen oven, a reflow soldering station, or an industrial furnace.
+
+The physics are different&mdash;we're dealing with heat instead of angular momentum&mdash;but the control challenge is similar. We want to reach a target temperature quickly without overshooting (which could damage sensitive materials).
+
+<OvenController client:load />
+
+Notice something interesting about the oven: the system has significant **lag**. When you turn on the heater, the temperature doesn't start rising immediately&mdash;heat has to flow from the element into the air. This lag makes the system harder to control. By the time you see the temperature rising, you've already pumped in a lot of heat.
+
+Try opening the door to see disturbance rejection in action! This is why oven PID controllers often use more integral and less derivative than our motor example.
+
+---
+
+## Balancing Act: An Inverted Pendulum
+
+For our final example, let's look at one of the most dramatic demonstrations of PID control: balancing an inverted pendulum. This is the classic "broom balancing on your palm" problem, and it's the same principle behind Segways and rocket landing.
+
+<InvertedPendulum client:load />
+
+The inverted pendulum shows something important: some systems **require** derivative control. With only proportional control (try setting Kd to 0), the pendulum oscillates with increasing amplitude until it falls. The derivative term provides the crucial damping that keeps it upright.
+
+Try these experiments:
+- **Turn off control** to see how quickly the system is unstable
+- **Set Kd = 0** to see oscillations grow and cause failure
+- **Click "Poke"** to add a disturbance and watch recovery
+
+---
+
+## Comparison Playground
+
+Finally, here's a playground where you can compare different control strategies side-by-side. Watch how No Control, P-only, PI, and full PID respond to the same target:
+
+<ComparisonPlayground client:load />
+
+Try clicking "Random Target" repeatedly to see how each controller handles different step inputs. Notice how:
+- **No Control** just drifts with the disturbance
+- **P-only** gets close but maintains steady-state error
+- **PI** eliminates steady-state error but overshoots more
+- **PID** balances fast response with minimal overshoot
+
+---
+
+## What We Learned
+
+Let's recap the intuition we've built:
+
+**Proportional (P)**: "Push toward the target, harder when far away"
+- Good for: fast initial response
+- Bad at: reaching the target exactly (steady-state error), not overshooting
+
+**Integral (I)**: "If we've been wrong for a while, try harder"
+- Good for: eliminating persistent error, overcoming disturbances
+- Bad at: responding quickly (can cause slow oscillation and windup)
+
+**Derivative (D)**: "If we're approaching fast, start braking"
+- Good for: reducing overshoot, stabilizing oscillation
+- Bad at: handling noisy measurements, providing initial push
+
+The magic of PID is that these three simple terms, combined properly, can control an enormous variety of systems&mdash;from car engines to chemical plants to the autopilot in aircraft.
+
+---
+
+## Going Further
+
+PID is just the beginning. Once you understand these fundamentals, there's a whole world of control theory to explore:
+
+- **Feedforward control**: Don't just react to error&mdash;predict what input you'll need
+- **Gain scheduling**: Use different gains depending on operating conditions
+- **Model predictive control**: Optimize over a future time horizon
+- **State-space control**: Control multiple variables simultaneously
+
+But PID remains the workhorse of industrial control for good reason: it's simple, robust, and with proper tuning, good enough for the vast majority of applications.
+
+---
+
+*This post was inspired by the amazing interactive explanations at [samwho.dev](https://samwho.dev/) and [ciechanow.ski](https://ciechanow.ski/).*
