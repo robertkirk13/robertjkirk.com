@@ -248,17 +248,17 @@ export default function PIDDemo({
 				ctx.stroke();
 			}
 
-			// Draw D term arrow (shows opposing/damping force direction) - only if D is enabled
+			// Draw D term arrow (shows D term output value and direction) - only if D is enabled
 			if (showD) {
-				const velArrowLength = Math.min(Math.abs(velocity) * 25, 35);
-				if (Math.abs(velocity) > 0.01) {
+				// Scale arrow length by D term output (dOut), not just velocity
+				const dArrowLength = Math.min(Math.abs(dOut) * 20, 35);
+				if (Math.abs(dOut) > 0.02) {
 					const tipX = centerX + Math.cos(-angle) * radius;
 					const tipY = centerY + Math.sin(-angle) * radius;
-					// D term opposes motion, so arrow points opposite to velocity direction
-					const tangentAngle =
-						-angle + (velocity > 0 ? Math.PI / 2 : -Math.PI / 2);
-					const arrowEndX = tipX + Math.cos(tangentAngle) * velArrowLength;
-					const arrowEndY = tipY + Math.sin(tangentAngle) * velArrowLength;
+					// D term opposes motion, arrow direction based on sign of dOut
+					const tangentAngle = -angle + (dOut < 0 ? Math.PI / 2 : -Math.PI / 2);
+					const arrowEndX = tipX + Math.cos(tangentAngle) * dArrowLength;
+					const arrowEndY = tipY + Math.sin(tangentAngle) * dArrowLength;
 					const headLength = 8;
 					const headAngle = Math.atan2(arrowEndY - tipY, arrowEndX - tipX);
 					const lineEndX = arrowEndX - headLength * 0.5 * Math.cos(headAngle);
