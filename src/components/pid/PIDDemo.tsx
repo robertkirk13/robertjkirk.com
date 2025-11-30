@@ -20,9 +20,9 @@ interface PIDDemoProps {
 }
 
 const MOMENT_OF_INERTIA = 0.12;
-const FRICTION = 0.02;
+const FRICTION = 0.08;
 const MAX_TORQUE = 2;
-const MAX_INTEGRAL = 10;
+const MAX_INTEGRAL = 2;
 const DT = 1 / 60;
 const DPR =
 	typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 2;
@@ -97,8 +97,8 @@ export default function PIDDemo({
 			const error = target - measuredAngle;
 			const derivative = (error - currentState.prevError) / DT;
 
-			// Integral with optional anti-windup clamping
-			const rawIntegral = currentState.integral + error * DT;
+			// Integral with optional anti-windup clamping (3x faster accumulation for responsiveness)
+			const rawIntegral = currentState.integral + error * DT * 3;
 			const newIntegral = clamp
 				? Math.max(-MAX_INTEGRAL, Math.min(MAX_INTEGRAL, rawIntegral))
 				: rawIntegral;
@@ -248,14 +248,15 @@ export default function PIDDemo({
 				ctx.stroke();
 			}
 
-			// Draw velocity indicator (D term visualization) - only if D is enabled
+			// Draw D term arrow (shows opposing/damping force direction) - only if D is enabled
 			if (showD) {
 				const velArrowLength = Math.min(Math.abs(velocity) * 25, 35);
 				if (Math.abs(velocity) > 0.01) {
 					const tipX = centerX + Math.cos(-angle) * radius;
 					const tipY = centerY + Math.sin(-angle) * radius;
+					// D term opposes motion, so arrow points opposite to velocity direction
 					const tangentAngle =
-						-angle + (velocity > 0 ? -Math.PI / 2 : Math.PI / 2);
+						-angle + (velocity > 0 ? Math.PI / 2 : -Math.PI / 2);
 					const arrowEndX = tipX + Math.cos(tangentAngle) * velArrowLength;
 					const arrowEndY = tipY + Math.sin(tangentAngle) * velArrowLength;
 					const headLength = 8;
@@ -503,7 +504,7 @@ export default function PIDDemo({
 		) => {
 			const width = PLOT_WIDTH;
 			const height = PLOT_HEIGHT;
-			const padding = 46;
+			const padding = 52;
 
 			ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 			ctx.fillStyle = "#000000";
@@ -522,7 +523,7 @@ export default function PIDDemo({
 			ctx.fillStyle = "#64748b";
 			ctx.font = "18px monospace";
 			ctx.textAlign = "right";
-			ctx.fillText("180°", padding - 8, padding + 6);
+			ctx.fillText("180°", padding - 8, padding + 8);
 			ctx.fillText("90°", padding - 8, height / 2 + 6);
 			ctx.fillText("0°", padding - 8, height - padding + 6);
 
@@ -566,13 +567,13 @@ export default function PIDDemo({
 			const legendY = height - 12;
 			ctx.fillStyle = "#fb923c";
 			ctx.fillRect(padding, legendY - 10, 10, 10);
-			ctx.font = "17px monospace";
+			ctx.font = "italic 17px 'Times New Roman', Georgia, serif";
 			ctx.fillStyle = "#fb923c";
 			ctx.fillText("Target", padding + 16, legendY);
 			ctx.fillStyle = "#93c5fd";
-			ctx.fillRect(padding + 90, legendY - 10, 10, 10);
+			ctx.fillRect(padding + 100, legendY - 10, 10, 10);
 			ctx.fillStyle = "#93c5fd";
-			ctx.fillText("Pointer", padding + 106, legendY);
+			ctx.fillText("Pointer", padding + 116, legendY);
 		},
 		[],
 	);
@@ -916,7 +917,7 @@ export default function PIDDemo({
 					<button
 						type="button"
 						onClick={() => setIsRunning(!isRunning)}
-						className={`p-2.5 rounded-xl transition-all ${isRunning ? "bg-amber-600 hover:bg-amber-500 active:bg-amber-400 text-white" : "bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-400 text-white"}`}
+						className="p-2.5 rounded-xl transition-all bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700"
 						title={isRunning ? "Pause" : "Play"}
 					>
 						{isRunning ? (
@@ -926,7 +927,7 @@ export default function PIDDemo({
 								height="20"
 								viewBox="0 0 24 24"
 								fill="none"
-								stroke="currentColor"
+								stroke="#a1a1aa"
 								strokeWidth="2"
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -940,13 +941,13 @@ export default function PIDDemo({
 								width="20"
 								height="20"
 								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
+								fill="#a1a1aa"
+								stroke="#a1a1aa"
 								strokeWidth="2.5"
 								strokeLinecap="round"
 								strokeLinejoin="round"
 							>
-								<polygon points="5 3 19 12 5 21 5 3" fill="currentColor" />
+								<polygon points="5 3 19 12 5 21 5 3" />
 							</svg>
 						)}
 					</button>
@@ -954,7 +955,7 @@ export default function PIDDemo({
 						<button
 							type="button"
 							onClick={() => setNoiseEnabled(!noiseEnabled)}
-							className={`p-2.5 rounded-xl transition-all ${noiseEnabled ? "bg-red-600 hover:bg-red-500 active:bg-red-400 text-white" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-300"}`}
+							className={`p-2.5 rounded-xl transition-all ${noiseEnabled ? "bg-red-600/20 hover:bg-red-600/30" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700"}`}
 							title={noiseEnabled ? "Noise ON" : "Noise OFF"}
 						>
 							<svg
@@ -963,7 +964,7 @@ export default function PIDDemo({
 								height="20"
 								viewBox="0 0 24 24"
 								fill="none"
-								stroke="currentColor"
+								stroke="#f87171"
 								strokeWidth="2"
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -977,7 +978,7 @@ export default function PIDDemo({
 							<button
 								type="button"
 								onClick={() => setClampingEnabled(!clampingEnabled)}
-								className={`p-2.5 rounded-xl transition-all ${clampingEnabled ? "bg-green-600 hover:bg-green-500 active:bg-green-400 text-white" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-300"}`}
+								className={`p-2.5 rounded-xl transition-all ${clampingEnabled ? "bg-green-600/20 hover:bg-green-600/30" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700"}`}
 								title={
 									clampingEnabled
 										? "Clamping ON - integral is limited"
@@ -990,26 +991,24 @@ export default function PIDDemo({
 									height="20"
 									viewBox="0 0 24 24"
 									fill="none"
-									stroke="currentColor"
+									stroke="#4ade80"
 									strokeWidth="2"
 									strokeLinecap="round"
 									strokeLinejoin="round"
 								>
 									{clampingEnabled ? (
 										<>
-											{/* Clamp squeezing - arrows pointing inward */}
-											<path d="M6 4v16" />
-											<path d="M10 8l-4 4 4 4" />
-											<path d="M18 4v16" />
-											<path d="M14 8l4 4-4 4" />
+											{/* Brackets with line bounded inside */}
+											<path d="M8 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3" />
+											<path d="M16 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3" />
+											<path d="M9 12h6" />
 										</>
 									) : (
 										<>
-											{/* Clamp open - arrows pointing outward */}
-											<path d="M4 4v16" />
-											<path d="M4 12h4" />
-											<path d="M20 4v16" />
-											<path d="M20 12h-4" />
+											{/* Brackets with line extending beyond */}
+											<path d="M8 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3" />
+											<path d="M16 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3" />
+											<path d="M2 12h20" />
 										</>
 									)}
 								</svg>
@@ -1017,7 +1016,7 @@ export default function PIDDemo({
 							<button
 								type="button"
 								onClick={() => setHoldEnabled(!holdEnabled)}
-								className={`p-2.5 rounded-xl transition-all ${holdEnabled ? "bg-orange-600 hover:bg-orange-500 active:bg-orange-400 text-white" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-300"}`}
+								className={`p-2.5 rounded-xl transition-all ${holdEnabled ? "bg-orange-600/20 hover:bg-orange-600/30" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700"}`}
 								title={
 									holdEnabled
 										? "HOLD - pointer locked, integral accumulating!"
@@ -1030,7 +1029,7 @@ export default function PIDDemo({
 									height="20"
 									viewBox="0 0 24 24"
 									fill="none"
-									stroke="currentColor"
+									stroke="#fb923c"
 									strokeWidth="2"
 									strokeLinecap="round"
 									strokeLinejoin="round"
@@ -1051,11 +1050,13 @@ export default function PIDDemo({
 						</>
 					)}
 				</div>
-				<div className="flex gap-3 font-mono text-xs">
-					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center w-[70px]">
-						<span className="text-zinc-500 text-[10px]">Error</span>
+				<div className="flex gap-3 font-mono text-xs flex-nowrap">
+					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]">
+						<span className="text-zinc-500 text-[10px] whitespace-nowrap">
+							Error
+						</span>
 						<span
-							className="text-red-400"
+							className="text-red-400 whitespace-nowrap"
 							style={{ fontVariantNumeric: "tabular-nums" }}
 						>
 							<span className="inline-block w-[0.6em] text-right">
@@ -1064,10 +1065,12 @@ export default function PIDDemo({
 							{Math.abs((error * 180) / Math.PI).toFixed(1)}°
 						</span>
 					</div>
-					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center w-[70px]">
-						<span className="text-zinc-500 text-[10px]">P</span>
+					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]">
+						<span className="text-zinc-500 text-[10px] whitespace-nowrap">
+							P
+						</span>
 						<span
-							className="text-blue-400"
+							className="text-blue-400 whitespace-nowrap"
 							style={{ fontVariantNumeric: "tabular-nums" }}
 						>
 							<span className="inline-block w-[0.6em] text-right">
@@ -1077,10 +1080,12 @@ export default function PIDDemo({
 						</span>
 					</div>
 					{enableD && (
-						<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center w-[70px]">
-							<span className="text-zinc-500 text-[10px]">D</span>
+						<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]">
+							<span className="text-zinc-500 text-[10px] whitespace-nowrap">
+								D
+							</span>
 							<span
-								className="text-purple-400"
+								className="text-purple-400 whitespace-nowrap"
 								style={{ fontVariantNumeric: "tabular-nums" }}
 							>
 								<span className="inline-block w-[0.6em] text-right">
@@ -1091,10 +1096,12 @@ export default function PIDDemo({
 						</div>
 					)}
 					{enableI && (
-						<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center w-[70px]">
-							<span className="text-zinc-500 text-[10px]">I</span>
+						<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]">
+							<span className="text-zinc-500 text-[10px] whitespace-nowrap">
+								I
+							</span>
 							<span
-								className="text-green-400"
+								className="text-green-400 whitespace-nowrap"
 								style={{ fontVariantNumeric: "tabular-nums" }}
 							>
 								<span className="inline-block w-[0.6em] text-right">
@@ -1104,6 +1111,20 @@ export default function PIDDemo({
 							</span>
 						</div>
 					)}
+					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]">
+						<span className="text-zinc-500 text-[10px] whitespace-nowrap">
+							Output
+						</span>
+						<span
+							className="text-pink-400 whitespace-nowrap"
+							style={{ fontVariantNumeric: "tabular-nums" }}
+						>
+							<span className="inline-block w-[0.6em] text-right">
+								{pOutput + dOutput + iOutput < 0 ? "−" : ""}
+							</span>
+							{Math.abs(pOutput + dOutput + iOutput).toFixed(2)}
+						</span>
+					</div>
 				</div>
 			</div>
 		</div>

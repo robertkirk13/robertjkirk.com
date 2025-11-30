@@ -2,8 +2,8 @@
 title: "The Hidden Magic of PID Controllers"
 date: "2025-11-30"
 formattedDate: "November 30, 2025"
-description: "An interactive exploration of proportional, integral, and derivative control systems."
-readingTime: 12
+description: "An interactive dive into proportional, integral, derivative (PID) control systems."
+readingTime: 18
 tags: ["controls", "engineering", "interactive"]
 ---
 
@@ -16,14 +16,21 @@ import ControlLoopDiagram from "../../components/pid/ControlLoopDiagram";
 import TuningChallenge from "../../components/pid/TuningChallenge";
 import ComparisonPlayground from "../../components/pid/ComparisonPlayground";
 
-You've probably used a PID controller today without knowing it. They're in your car's cruise control, your home thermostat, the quadcopter you flew last weekend, and the robotic arm that assembled your phone. PID controllers are everywhere because they solve a fundamental problem: **how do you get something to go where you want it to go, and stay there?**
+You've probably benefited from multiple PID controllers today without realizing it. They're in your car's cruise control, your home thermostat, and the robotic arm that assembled your phone. PID controllers are everywhere because they provide an elegantly simple solution to a common problem: **how do you get something to go where you want, and stay there?**
 
-<div className="flex items-center gap-3 my-6">
-  <div className="w-5 h-5 rounded-full bg-orange-500 border-2 border-orange-300 flex-shrink-0 shadow-lg shadow-orange-500/30" style={{animation: "pulse-size 2s ease-in-out infinite"}} />
-  <span className="text-zinc-400 text-sm">
-    <span className="text-orange-400 font-medium">Orange elements are interactive</span> — click or drag to explore
-  </span>
-</div>
+
+
+In this post, we're going to build an intuition for how PID controllers work. We'll start with the simplest possible controller and gradually add complexity. By the end, you'll understand not just *what* each term does, but *why* it's needed.
+
+---
+
+## Pointer to Target
+
+Let's start with a concrete example. Imagine you have a motor attached to a <span className="text-blue-400 italic font-semibold text-[1.1em]" style={{fontFamily: '"Times New Roman", Georgia, serif'}}>pointer</span>, like a speedometer needle. Your goal is to get the pointer to a <span className="text-orange-400 italic font-semibold text-[1.1em]" style={{fontFamily: '"Times New Roman", Georgia, serif'}}>target</span> angle. Sounds simple enough: just power the motor until it arrives, right?
+
+The catch is **inertia**. The pointer has mass, and mass resists changes in motion. If you cut the power the moment you reach the target, your momentum carries you right past it.
+
+
 
 <style>{`
   @keyframes pulse-size {
@@ -32,25 +39,25 @@ You've probably used a PID controller today without knowing it. They're in your 
   }
 `}</style>
 
-In this post, we're going to build an intuition for how PID controllers work. We'll start with the simplest possible controller and gradually add complexity. By the end, you'll understand not just *what* each term does, but *why* it's needed.
-
----
-
-## The Problem: Turning a Motor
-
-Let's start with something concrete. Imagine you have a motor attached to a <span className="text-blue-400 italic font-semibold text-[1.1em]" style={{fontFamily: '"Times New Roman", Georgia, serif'}}>pointer</span>, like a compass needle. Your job is to make the pointer point at a <span className="text-orange-400 italic font-semibold text-[1.1em]" style={{fontFamily: '"Times New Roman", Georgia, serif'}}>target</span> angle. Sounds simple enough: just tell the motor to turn until it reaches the target, right?
-
-The catch is **inertia**. The pointer has mass, and mass doesn't like to change direction. If you're spinning toward the target and cut the power when you arrive, you'll overshoot. The momentum you built up carries you past where you wanted to stop.
-
-Try dragging the orange handle to set a new target angle and see how the system responds:
+Try dragging the <span className="inline-block w-3 h-3 rounded-full bg-orange-500 border-2 border-orange-300 shadow-lg shadow-orange-500/30 align-middle" style={{animation: "pulse-size 2s ease-in-out infinite"}} /> <span className="text-orange-400 font-medium">orange handle</span> to set a new target angle and see how the system responds:
 
 <MotorDemo client:load />
 
-The motor has no idea it should slow down as it approaches the target! It's providing full torque right up until it passes the target angle, then switching to full reverse torque. This is why the pointer oscillates; in fact, it never settles down. We need something smarter.
+The motor has no idea it should slow down as it approaches the target! It provides full torque up to the target angle, then switches to full reverse torque. Without a way to slow down near the target, the pointer will oscillate right around it forever. We need a smarter control system.
+
+{/* <details className="my-4 group">
+<summary className="cursor-pointer text-zinc-500 hover:text-zinc-400 text-sm flex items-center gap-1.5 list-none">
+<svg className="w-2.5 h-2.5 transition-transform group-open:rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M6.293 4.293a1 1 0 011.414 0L14 10.586l-6.293 6.293a1 1 0 01-1.414-1.414L11.172 10.5 6.293 5.707a1 1 0 010-1.414z" /></svg>
+This is called "bang-bang" control. Learn more
+</summary>
+<span className="block mt-2 ml-4 text-zinc-500 text-sm">
+If we tolerate some error, bang-bang with a deadzone works fine—it's how simple thermostats operate.
+</span>
+</details> */}
 
 ---
 
-## Proportional Control: The "P" in PID
+## Proportional Control
 
 The first insight is simple: **the further you are from the target, the harder you should push**. If you're 90° away, apply a lot of power. If you're only 2° away, apply just a little. This is called **proportional control** because the output is proportional to the error.
 
@@ -60,36 +67,35 @@ $$
 $$
 </div>
 
-Where **Error** = Target &minus; Current Position, and **Kp** is a gain that determines how aggressive the response is.
+Where  $error= Target - Current \: Position$, and $K_p$ is a gain that determines how aggressive the response is.
 
 Here's how the control loop works:
 
 <ControlLoopDiagram client:load />
 
-The system continuously:
-1. **Measures** the current position (feedback)
-2. **Computes** the error = target − current
-3. **Outputs** torque proportional to that error
-4. Repeat at ~60 times per second
+The loop runs 60 times per second:
+1. **Measure** the current position (feedback)
+2. **Compute**: $error = target − current$
+3. **Output**: torque command proportional to the error
 
-This creates a **closed-loop system**&mdash;the controller constantly adjusts based on what it observes. Now let's see it in action:
+This creates a **closed-loop system**: the controller constantly adjusts based on what it observes. Now let's see it in action:
 
 <PIDDemo client:load initialKp={1.5} />
 
-Play with the Kp slider. Notice that there's a tradeoff:
+Play with the $K_p$ slider and target angle. Notice that there's a tradeoff:
 
-- **Too low**: The system is sluggish and may not even reach the target if there's any friction
-- **Too high**: The system overshoots and oscillates, potentially getting worse over time
+- **Too low**: Sluggish response, and any resistance will leave you stuck short of the target (steady-state error)
+- **Too high**: Fast response, but overshoots and oscillates—potentially unstable
 
-This is the fundamental limitation of proportional control. You're asking one number to do two jobs: respond quickly AND stop accurately. It can't do both.
+This is the fundamental tradeoff of proportional control. Higher gain gets you there faster but makes it more likely to overshoot and oscillate aggressively.
 
 ---
 
-## Derivative Control: The "D" in PID
+## Derivative Control
 
 The proportional term looks at where you are. But what if we could also look at **how fast you're approaching the target**? If you're racing toward the target at high speed, you should start braking early. If you're crawling toward it, you don't need as much braking.
 
-This is what the **derivative term** does&mdash;it responds to the *rate of change* of the error.
+This is what the **derivative term** does: it responds to the *rate of change* of the error. This is the "D" in PID.
 
 <div className="py-6 my-6 text-center text-xl">
 $$
@@ -97,38 +103,34 @@ $$
 $$
 </div>
 
-If you're approaching the target quickly, the derivative term applies a braking force. It's like anticipatory braking: you don't wait until you're at the stop sign to brake&mdash;you start slowing down as you approach. The purple arrow shows the direction of motion&mdash;watch how the D term provides opposing force.
+If you're approaching the target quickly, the derivative term applies a braking force. The purple arrow shows the contribution of the D term to the total output.
 
 <PIDDemo client:load enableD={true} enableNoise={true} initialKp={2.0} initialKd={0.8} />
 
-Notice how adding the D term dramatically reduces oscillation! The system now settles smoothly to the target instead of bouncing back and forth. Try setting Kd to 0 to see the difference&mdash;the oscillation returns immediately.
+Like magic, the oscillation is almost entirely gone! The system now settles smoothly to the target instead of bouncing back and forth. Try setting $K_d$ to 0 to see the difference: the oscillation returns immediately.
 
-<div className="my-6 p-5 bg-zinc-900/50 border border-zinc-800 rounded-xl">
-<div className="flex items-center gap-2 mb-3 text-amber-400 font-medium">
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="m6.41 6.41 2.83 2.83"/><path d="M2 12h4"/><path d="m6.41 17.59 2.83-2.83"/><path d="M12 18v4"/><path d="m17.59 17.59-2.83-2.83"/><path d="M18 12h4"/><path d="m17.59 6.41-2.83 2.83"/></svg>
-Bonus: The Noise Problem
-</div>
-
-Try enabling the **Noise** button to see why the D term can be problematic in real systems. Because D responds to *changes* in the error, it amplifies any sensor noise. In real applications, this often requires filtering the derivative signal or limiting D's contribution. This is why many practitioners recommend starting with just PI control and only adding D when necessary.
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Watch out for noise!</div>
+<span className="text-zinc-400">Try enabling </span><span className="inline-flex items-center gap-0.5 text-red-400"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline"><path d="M2 12h2l2-7 3 14 3-7 2 3h8" /></svg>Noise</span><span className="text-zinc-400"> and increasing $K_d$ to see why D can be problematic: it amplifies sensor noise. In real systems, it's often better to start with just PI and only add D when needed.</span>
 </div>
 
 ---
 
-## The Steady-State Error Problem
+## Steady-State Error
 
-We've solved the oscillation problem with PD control, but there's another issue lurking. Let's add a mass to the end of the pointer. Watch what happens&mdash;the pointer can't quite reach the target:
+We've solved the oscillation problem with PD control, but there's another issue lurking. Let's add a mass to the end of the pointer. Watch what happens: the pointer can't reach the target:
 
 <PIDDemo client:load enableD={true} enableMass={true} initialKp={2.0} initialKd={0.8} initialMass={0.5} />
 
-This persistent gap is called **steady-state error**. The mass pulls the pointer down, and the PD controller needs *some* error to generate enough force to hold the mass up. The heavier the mass, the bigger the error needed. Try adjusting the mass slider to see this effect&mdash;and notice how increasing Kp reduces the error but can't eliminate it entirely.
+This is **steady-state error**. Proportional control only pushes when there's error. To counteract the constant pull of gravity, some error must remain — otherwise there's nothing to push against. Higher $K_p$ shrinks the gap but can't close it.
 
-Neither P nor D can fix this problem. D only responds to *changes* in error&mdash;once the system has settled (even in the wrong place), there's no change to respond to. We need something else.
+Neither P nor D can fix this problem. We need something that remembers the past and builds up force over time.
 
 ---
 
-## Integral Control: The "I" in PID
+## Integral Control
 
-Here's the key insight: if the error persists, we should keep adding force. Even a small error, given enough time, should result in a large correction. This is what the **integral term** does&mdash;it sums up all the past errors.
+Here's the key insight: if the error persists, we should keep adding force. Even a small error, given enough time, should result in a large correction. This is what the **integral term** does: it sums up all the past errors.
 
 <div className="py-6 my-6 text-center text-xl">
 $$
@@ -136,54 +138,26 @@ $$
 $$
 </div>
 
-Think of it like this: the integral term is *patient*. It doesn't care if the error is small right now. If that small error has been there for a while, the integral builds up and eventually overwhelms any disturbance.
+The integral term keeps track of persistent error. If an error has been there for a while, the integral builds up and eventually overwhelms the disturbance. Watch the $I$ term increase to counteract the constant pull of gravity:
 
 <PIDDemo client:load enableD={true} enableI={true} enableMass={true} enableNoise={true} showClampingToggle={true} initialKp={2.0} initialKd={0.8} initialKi={0.5} initialMass={0.5} />
 
-The integral term eliminates steady-state error beautifully! Now the pointer reaches the target exactly, even with the mass pulling it down.
+The integral term eliminates steady-state error beautifully! Now the pointer reaches the target exactly, even with the mass pulling it down. 
 
-<div className="my-6 p-5 bg-zinc-900/50 border border-zinc-800 rounded-xl">
-<div className="flex items-center gap-2 mb-3 text-amber-400 font-medium">
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="m6.41 6.41 2.83 2.83"/><path d="M2 12h4"/><path d="m6.41 17.59 2.83-2.83"/><path d="M12 18v4"/><path d="m17.59 17.59-2.83-2.83"/><path d="M18 12h4"/><path d="m17.59 6.41-2.83 2.83"/></svg>
-Bonus: Integral Windup
-</div>
-
-The integral term can cause problems of its own. **To see windup in action:**
-
-1. Click the **lock icon** (turns orange) to hold the pointer in place&mdash;this simulates a blocked motor
-2. Move the target to the opposite side
-3. Wait a few seconds while the integral accumulates
-4. Click the lock again to release&mdash;watch the pointer violently overshoot and oscillate!
-
-What happened? While the pointer was blocked, the PID controller kept trying to reach the target. The integral accumulated a *huge* value because the error persisted. When the blockage was removed, all that wound-up integral caused massive overshoot. This is **integral windup**&mdash;it happens during startup, when actuators saturate, or when something physically blocks the mechanism.
-
-**Now try again with clamping enabled:**
-
-1. Click reset, then click the **clamp icon** (turns green) to enable clamping
-2. Enable the **lock** (orange) again
-3. Move the target to the opposite side and wait
-4. Release the lock&mdash;much better behavior!
-
-With clamping enabled (green), the integral is limited, preventing runaway accumulation.
-
-**Other anti-windup strategies include:**
-
-- **Conditional integration**: Only accumulate integral when close to the target
-- **Back-calculation**: Reduce integral when output saturates  
-- **Recency-weighted integration**: Give more weight to recent errors, letting old errors "decay"
-
-Each approach has tradeoffs, but clamping is the most common starting point because it's simple and effective.
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Watch out for integral windup!</div>
+<span className="text-zinc-400">You may notice that the system is not as responsive as before. Why not increase the integral gain $K_i$? Try increasing it and click the </span><span className="text-orange-400">lock icon</span><span className="text-zinc-400"> to block the motor, move the target, wait 5-10s, then release the lock. Watch the overshoot! The integral accumulated while blocked. We have to be careful not to increase $K_i$ too much, or the system will become unstable. We can use </span><span className="text-green-400">clamping</span><span className="text-zinc-400"> or some other techniques to limit this effect.</span>
 </div>
 
 ---
 
-## Beyond the Pointer: Temperature Control
+## Temperature Control
 
-Let's see how the same principles apply to a completely different system: controlling the temperature of an oven. This is closer to what you'd find in a real kitchen oven, a reflow soldering station, or an industrial furnace.
+Let's see how the same principles apply to a completely different system: controlling the temperature of an oven. This is close to what you'd find in a real kitchen oven, a reflow soldering station, or an industrial furnace.
 
 <OvenController client:load />
 
-Notice something interesting: this controller only uses **P and I**&mdash;no derivative term at all! Why does that work here?
+Notice something interesting: this controller only uses **P and I** - no derivative term at all! Why does that work here?
 
 The key is that thermal systems have **natural damping**. Heat dissipates gradually, and the thermal mass of the oven acts like a built-in low-pass filter. There's no "momentum" that would cause the temperature to overshoot wildly like our motor pointer. The system is inherently sluggish.
 
@@ -194,36 +168,28 @@ This sluggishness means:
 
 Try opening the door to see disturbance rejection! Watch how the integral term builds up to compensate for the increased heat loss.
 
-<div className="my-6 p-5 bg-zinc-900/50 border border-zinc-800 rounded-xl">
-<div className="flex items-center gap-2 mb-3 text-amber-400 font-medium">
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="m6.41 6.41 2.83 2.83"/><path d="M2 12h4"/><path d="m6.41 17.59 2.83-2.83"/><path d="M12 18v4"/><path d="m17.59 17.59-2.83-2.83"/><path d="M18 12h4"/><path d="m17.59 6.41-2.83 2.83"/></svg>
-Bonus: Conditional Integration
-</div>
-
-Try enabling **Conditional I** (the button with the circle icon). With this enabled, the integral only accumulates when the temperature is within 50° of the target. This prevents the integral from winding up during the initial heating phase when the error is huge.
-
-Watch the difference: without conditional I, the oven may overshoot slightly during startup because the integral accumulated while far from target. With conditional I enabled, the integral only kicks in during the final approach, providing a cleaner response.
-
-This is a classic example of when PI control is not just sufficient, but preferable&mdash;adding D would just amplify sensor noise without providing much benefit.
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Try conditional integration</div>
+<span className="text-zinc-400">Enable </span><span className="text-green-400">Conditional I</span><span className="text-zinc-400"> to only accumulate integral when close to target—this prevents windup during initial heating. PI control is often preferable here since D would just amplify sensor noise.</span>
 </div>
 
 ---
 
-## Balancing Act: An Inverted Pendulum
+## Inverted Pendulum
 
 For our final example, let's look at one of the most dramatic demonstrations of PID control: balancing an inverted pendulum. This is the classic "broom balancing on your palm" problem, and it's the same principle behind Segways and rocket landing.
 
 <InvertedPendulum client:load showPositionControl={false} />
 
-The pendulum balances! But wait&mdash;watch what happens over time. Click the cart to poke it and observe: eventually the cart **crashes into the edge of the track**. The PD controller is doing its job of keeping the pendulum upright, but it has no concept of *where* the cart is on the track.
+The pendulum balances! But wait, watch what happens over time. Click the cart to poke it and observe: eventually the cart **crashes into the edge of the track**. The PD controller is doing its job of keeping the pendulum upright, but it has no concept of *where* the cart is on the track.
 
 This is the classic problem of **cascaded control**. We have one controller for the angle, but we need *another* controller to manage position. The solution is to add a second PD loop:
 
 <CascadeDiagram client:load />
 
-Here's the key insight. Without the outer position loop, the inner angle loop always tries to keep the pendulum at 0° (vertical). But with the outer loop, we *bias* that target slightly off-vertical to push the cart back toward center:
+Without the outer position loop, the inner angle loop always tries to keep the pendulum at 0° (vertical). The additional outer loop *biases* that target slightly off-vertical to push the cart back toward center:
 
-```js
+```cpp
 // Outer loop: where should the pendulum lean?
 positionError = targetPosition - cartPosition
 targetAngle = Kp_pos * positionError + Kd_pos * cartVelocity
@@ -233,7 +199,7 @@ angleError = targetAngle - pendulumAngle  // NOT just "0 - angle"!
 motorForce = Kp_angle * angleError + Kd_angle * angularVelocity
 ```
 
-If the cart drifts right, the position loop outputs a small **negative target angle**&mdash;telling the pendulum to lean slightly left. This creates a force that pushes the cart back. The inner angle loop doesn't care *why* it's being told to lean; it just does its job of achieving that angle smoothly.
+If the cart drifts right, the position loop outputs a small **negative target angle**, telling the pendulum to lean slightly left. This creates a force that pushes the cart back. The inner angle loop doesn't care *why* it's being told to lean; it just does its job of achieving that angle smoothly. Try moving around the target position and play with the coefficients to see the response:
 
 <InvertedPendulum client:load showPositionControl={true} />
 
@@ -242,20 +208,13 @@ Now we have two control loops working together:
 1. **Angle Control** (Kp<sub>θ</sub>, Kd<sub>θ</sub>): Fast inner loop that keeps the pendulum at whatever angle it's told
 2. **Position Control** (Kp<sub>x</sub>, Kd<sub>x</sub>): Slower outer loop that adjusts that target angle to control cart position
 
-The position controller adds a gentle bias to the angle controller's target, nudging the cart back toward center without destabilizing the balance.
+The position controller adds a gentle bias to the angle controller's target, nudging the cart back toward center without destabilizing the balance. Try removing the derivative term from the angle controller and see how quickly the system becomes unstable.
 
-Try these experiments:
-- **Drag the orange handle** to set a new target position and watch the cart smoothly move there while staying balanced
-- **Click the cart** to poke it and watch both controllers work to recover
-- **Set position Kp<sub>x</sub> = 0** to see it drift off track like before
-- **Turn off control** to see how quickly the system is unstable
-- **Set Kd<sub>θ</sub> = 0** to see angle oscillations grow and cause failure
-
-This cascaded structure&mdash;an inner loop for fast dynamics (angle) and an outer loop for slower dynamics (position)&mdash;is extremely common in real control systems. Quadcopters use it (attitude inner loop, position outer loop), as do robotic arms and self-balancing robots.
+This cascaded structure - an inner loop for fast dynamics (angle) and an outer loop for slower dynamics (position) - is extremely common in real control systems. Quadcopters use it (attitude inner loop, position outer loop), as do robotic arms and self-balancing robots.
 
 ---
 
-## Summary: The Complete Picture
+## The PID Controller
 
 Now you've seen all three terms in action:
 
@@ -269,47 +228,33 @@ Now you've seen all three terms in action:
 
 ## Tuning Challenge
 
-The art of PID control is choosing Kp, Ki, and Kd to work in harmony. Each system is different&mdash;the mass of the pointer, the power of the motor, the amount of friction&mdash;all affect what gains work best.
+The art of PID control is choosing Kp, Ki, and Kd to work in harmony. Each system is different: the mass of the pointer, the power of the motor, the amount of friction all affect what gains work best.
 
-**Can you tune a PID controller?** Try each challenge and beat the par time. The gains start at non-functional values&mdash;you'll need to figure out what works!
+**Can you tune a PID controller?** Try to tune the controller for each challenge. Can you find values that work for all challenges?
 
 <TuningChallenge client:load />
 
-<div className="my-6 p-5 bg-zinc-900/50 border border-zinc-800 rounded-xl">
-<div className="flex items-center gap-2 mb-3 text-amber-400 font-medium">
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-Hints &amp; Tips
-</div>
-
-**For each challenge:**
-
-- **Basics**: P alone can solve this, but D makes it cleaner
-- **Weighted**: The mass creates steady-state error&mdash;you'll need I to fix it
-- **Big Step**: Large movements need careful D tuning to avoid overshoot
-- **Heavy**: Maximum mass requires all three terms working together
-
-**General tuning approach:**
-
-1. **Start with P only**: Increase until it responds but oscillates
-2. **Add D**: Dampen the oscillation until minimal overshoot
-3. **Add I if needed**: Only when there's persistent error (mass challenges)
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Tuning tip</div>
+<span className="text-zinc-400">Start with P only (increase until it oscillates), add D to dampen, then add I only if there's persistent error. _Basics_ needs just P+D; _Weighted/Heavy_ need I for steady-state error.</span>
 </div>
 
 ---
 
 ## Comparison Playground
 
-Finally, here's a playground where you can compare P, PD, and PID controllers side-by-side. All three controllers are trying to reach the same target&mdash;watch how they differ:
+Finally, here's a playground where you can compare P, PD, PI, and PID controllers side-by-side. All four controllers are trying to reach the same target&mdash;watch how they differ:
 
 <ComparisonPlayground client:load />
 
-Click **Random Target** (🎲) to see how each handles step changes. Increase the **Mass** to add a disturbance and observe:
+Click the **Randomize Target** button to see how each handles step changes. Increase the **Mass** to add a disturbance and observe:
 
 - **P** (blue): Gets close but oscillates, and has steady-state error when mass is added
 - **PD** (purple): Settles quickly with minimal overshoot, but still has steady-state error with mass
-- **PID** (green): Smooth response AND eliminates steady-state error&mdash;the integral term compensates for the mass
+- **PI** (amber): Eliminates steady-state error but oscillates more than PD&mdash;no damping from D term
+- **PID** (green): The best of both worlds&mdash;smooth response AND no steady-state error
 
-This is the power of combining all three terms: P provides responsiveness, D provides damping, and I eliminates persistent error.
+Notice how PI and PID both eliminate steady-state error (they reach the target exactly), but PID does it more smoothly because the D term provides damping. This is the power of combining all three terms: P provides responsiveness, D provides damping, and I eliminates persistent error.
 
 ---
 
@@ -346,4 +291,4 @@ But PID remains the workhorse of industrial control for good reason: it's simple
 
 ---
 
-*This post was inspired by the amazing interactive explanations at [samwho.dev](https://samwho.dev/) and [ciechanow.ski](https://ciechanow.ski/).*
+<p className="text-sm text-zinc-500 mt-8">This post was inspired by the interactive explanations at <a href="https://samwho.dev/" className="text-zinc-400 hover:text-zinc-300">samwho.dev</a> and <a href="https://ciechanow.ski/" className="text-zinc-400 hover:text-zinc-300">ciechanow.ski</a>.</p>

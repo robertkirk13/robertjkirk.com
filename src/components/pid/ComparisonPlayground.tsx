@@ -29,6 +29,7 @@ const CANVAS_HEIGHT = 280;
 const controllerConfigs: ControllerConfig[] = [
 	{ name: "P", kp: 2.0, ki: 0, kd: 0, color: "#3b82f6" },
 	{ name: "PD", kp: 2.0, ki: 0, kd: 0.8, color: "#a855f7" },
+	{ name: "PI", kp: 2.0, ki: 0.5, kd: 0, color: "#f59e0b" },
 	{ name: "PID", kp: 2.0, ki: 0.5, kd: 0.8, color: "#22c55e" },
 ];
 

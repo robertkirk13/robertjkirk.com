@@ -120,7 +120,7 @@ export default function ControlLoopDiagram() {
 			// PID equation
 			ctx.font = "8px monospace";
 			ctx.fillStyle = "#64748b";
-			ctx.fillText("Kp·e + Ki·∫e + Kd·ė", x, y + 11);
+			ctx.fillText("P + I + D", x, y + 11);
 		};
 
 		// Draw plant box

@@ -496,7 +496,7 @@ export default function OvenController() {
 					<button
 						type="button"
 						onClick={() => setIsRunning(!isRunning)}
-						className={`p-2.5 rounded-xl transition-all ${isRunning ? "bg-amber-600 hover:bg-amber-500 active:bg-amber-400 text-white" : "bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-400 text-white"}`}
+						className="p-2.5 rounded-xl transition-all bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700"
 						title={isRunning ? "Pause" : "Play"}
 					>
 						{isRunning ? (
@@ -506,7 +506,7 @@ export default function OvenController() {
 								height="20"
 								viewBox="0 0 24 24"
 								fill="none"
-								stroke="currentColor"
+								stroke="#a1a1aa"
 								strokeWidth="2"
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -520,20 +520,20 @@ export default function OvenController() {
 								width="20"
 								height="20"
 								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
+								fill="#a1a1aa"
+								stroke="#a1a1aa"
 								strokeWidth="2.5"
 								strokeLinecap="round"
 								strokeLinejoin="round"
 							>
-								<polygon points="5 3 19 12 5 21 5 3" fill="currentColor" />
+								<polygon points="5 3 19 12 5 21 5 3" />
 							</svg>
 						)}
 					</button>
 					<button
 						type="button"
 						onClick={() => setDoorOpen(!doorOpen)}
-						className={`p-2.5 rounded-xl transition-all ${doorOpen ? "bg-cyan-600 hover:bg-cyan-500 active:bg-cyan-400 text-white" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-300"}`}
+						className={`p-2.5 rounded-xl transition-all ${doorOpen ? "bg-cyan-600/20 hover:bg-cyan-600/30" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700"}`}
 						title={doorOpen ? "Close Door (reduce heat loss)" : "Open Door (increase heat loss)"}
 					>
 						<svg
@@ -542,7 +542,7 @@ export default function OvenController() {
 							height="20"
 							viewBox="0 0 24 24"
 							fill="none"
-							stroke="currentColor"
+							stroke="#22d3ee"
 							strokeWidth="2"
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -552,13 +552,13 @@ export default function OvenController() {
 									{/* Open door */}
 									<path d="M4 4h6l8 3v14H4z" />
 									<path d="M10 4l8 3" />
-									<circle cx="8" cy="13" r="1" fill="currentColor" />
+									<circle cx="8" cy="13" r="1" fill="#22d3ee" />
 								</>
 							) : (
 								<>
 									{/* Closed door */}
 									<rect x="4" y="4" width="14" height="17" rx="1" />
-									<circle cx="15" cy="13" r="1" fill="currentColor" />
+									<circle cx="15" cy="13" r="1" fill="#22d3ee" />
 								</>
 							)}
 						</svg>
@@ -566,7 +566,7 @@ export default function OvenController() {
 					<button
 						type="button"
 						onClick={() => setConditionalI(!conditionalI)}
-						className={`p-2.5 rounded-xl transition-all ${conditionalI ? "bg-green-600 hover:bg-green-500 active:bg-green-400 text-white" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-300"}`}
+						className={`p-2.5 rounded-xl transition-all ${conditionalI ? "bg-green-600/20 hover:bg-green-600/30" : "bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700"}`}
 						title={conditionalI ? "Conditional I ON - only accumulates near target" : "Conditional I OFF - always accumulates"}
 					>
 						<svg
@@ -575,7 +575,7 @@ export default function OvenController() {
 							height="20"
 							viewBox="0 0 24 24"
 							fill="none"
-							stroke="currentColor"
+							stroke="#4ade80"
 							strokeWidth="2"
 							strokeLinecap="round"
 							strokeLinejoin="round"
