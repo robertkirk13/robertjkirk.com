@@ -173,13 +173,26 @@ The full PID demo above is perfect for experimenting with this. Try starting wit
 
 Let's see how the same principles apply to a completely different system: controlling the temperature of an oven. This is closer to what you'd find in a real kitchen oven, a reflow soldering station, or an industrial furnace.
 
-The physics are different&mdash;we're dealing with heat instead of angular momentum&mdash;but the control challenge is similar. We want to reach a target temperature quickly without overshooting (which could damage sensitive materials).
-
 <OvenController client:load />
 
-Notice something interesting about the oven: the system has significant **lag**. When you turn on the heater, the temperature doesn't start rising immediately&mdash;heat has to flow from the element into the air. This lag makes the system harder to control. By the time you see the temperature rising, you've already pumped in a lot of heat.
+Notice something interesting: this controller only uses **P and I**&mdash;no derivative term at all! Why does that work here?
 
-Try opening the door to see disturbance rejection in action! This is why oven PID controllers often use more integral and less derivative than our motor example.
+The key is that thermal systems have **natural damping**. Heat dissipates gradually, and the thermal mass of the oven acts like a built-in low-pass filter. There's no "momentum" that would cause the temperature to overshoot wildly like our motor pointer. The system is inherently sluggish.
+
+This sluggishness means:
+- **D isn't needed** for damping&mdash;the physics provides it
+- **I is essential**&mdash;we need to eliminate steady-state error from heat loss
+- **P provides** the basic responsiveness
+
+Try opening the door to see disturbance rejection! Watch how the integral term builds up to compensate for the increased heat loss.
+
+### Conditional Integration
+
+Try enabling **Conditional I** (the button with the circle icon). With this enabled, the integral only accumulates when the temperature is within 50° of the target. This prevents the integral from winding up during the initial heating phase when the error is huge.
+
+Watch the difference: without conditional I, the oven may overshoot slightly during startup because the integral accumulated while far from target. With conditional I enabled, the integral only kicks in during the final approach, providing a cleaner response.
+
+This is a classic example of when PI control is not just sufficient, but preferable&mdash;adding D would just amplify sensor noise without providing much benefit.
 
 ---
 
