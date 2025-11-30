@@ -23,6 +23,7 @@ export default function MotorDemo({ showPlot = true, showControls = true }: Moto
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const plotCanvasRef = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<MotorState>({ angle: Math.PI / 2, angularVelocity: 0 }); // Start at 90°
+  const stateRef = useRef<MotorState>(state);
   const [targetAngle, setTargetAngle] = useState<number>(3 * Math.PI / 4); // 135 degrees (start at one end)
   const [isRunning, setIsRunning] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
@@ -428,26 +429,25 @@ export default function MotorDemo({ showPlot = true, showControls = true }: Moto
     // Don't run animation if not visible
     if (!isVisible) return;
 
-    let currentState = state;
-
     const loop = () => {
       if (isRunning && !isDragging) {
         const maxHistory = 200;
         
-        currentState = simulate(currentState, targetAngle);
+        const newState = simulate(stateRef.current, targetAngle);
+        stateRef.current = newState;
         
         // Record to history for smooth graph
-        historyRef.current.push(currentState.angle);
+        historyRef.current.push(newState.angle);
         targetHistoryRef.current.push(targetAngle);
         
         if (historyRef.current.length > maxHistory) {
           historyRef.current.shift();
           targetHistoryRef.current.shift();
         }
-        setState(currentState);
+        setState(newState);
       }
 
-      drawMotor(ctx, currentState.angle, targetAngle, motorPower, isHoveringTarget || isDragging);
+      drawMotor(ctx, stateRef.current.angle, targetAngle, motorPower, isHoveringTarget || isDragging);
 
       if (showPlot && plotCanvasRef.current) {
         const plotCtx = plotCanvasRef.current.getContext('2d');
@@ -496,7 +496,9 @@ export default function MotorDemo({ showPlot = true, showControls = true }: Moto
   };
 
   const handleReset = () => {
-    setState({ angle: Math.PI / 2, angularVelocity: 0 }); // Start at 90° (center)
+    const initialState = { angle: Math.PI / 2, angularVelocity: 0 };
+    stateRef.current = initialState;
+    setState(initialState); // Start at 90° (center)
     historyRef.current = [];
     targetHistoryRef.current = [];
     setTargetAngle(3 * Math.PI / 4); // Target at 135°

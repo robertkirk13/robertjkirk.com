@@ -22,6 +22,7 @@ const DEFAULT_TARGET_TEMP = 350;
 export default function OvenController() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<OvenState>({ temperature: AMBIENT_TEMP, integral: 0, prevError: 0 });
+  const stateRef = useRef<OvenState>(state);
   const [targetTemp, setTargetTemp] = useState(DEFAULT_TARGET_TEMP);
   const [kp, setKp] = useState(DEFAULT_KP);
   const [ki, setKi] = useState(DEFAULT_KI);
@@ -213,15 +214,15 @@ export default function OvenController() {
     if (!ctx) return;
     if (!isVisible) return;
 
-    let currentState = state;
     const loop = () => {
       if (isRunning) {
-        currentState = simulate(currentState, targetTemp, kp, ki, kd, doorOpen);
-        setState(currentState);
-        historyRef.current.push({ temp: currentState.temperature, target: targetTemp });
+        const newState = simulate(stateRef.current, targetTemp, kp, ki, kd, doorOpen);
+        stateRef.current = newState;
+        setState(newState);
+        historyRef.current.push({ temp: newState.temperature, target: targetTemp });
         if (historyRef.current.length > 300) historyRef.current.shift();
       }
-      drawOven(ctx, currentState.temperature, targetTemp, heaterPower, historyRef.current, doorOpen);
+      drawOven(ctx, stateRef.current.temperature, targetTemp, heaterPower, historyRef.current, doorOpen);
       animationRef.current = requestAnimationFrame(loop);
     };
     animationRef.current = requestAnimationFrame(loop);
@@ -229,7 +230,9 @@ export default function OvenController() {
   }, [simulate, drawOven, targetTemp, isRunning, isVisible, kp, ki, kd, doorOpen, heaterPower]);
 
   const handleReset = () => {
-    setState({ temperature: AMBIENT_TEMP, integral: 0, prevError: 0 });
+    const initialState = { temperature: AMBIENT_TEMP, integral: 0, prevError: 0 };
+    stateRef.current = initialState;
+    setState(initialState);
     historyRef.current = [];
     setTargetTemp(DEFAULT_TARGET_TEMP);
     setKp(DEFAULT_KP);

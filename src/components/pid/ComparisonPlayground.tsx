@@ -35,6 +35,7 @@ export default function ComparisonPlayground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [configs, setConfigs] = useState<ControllerConfig[]>(initialConfigs);
   const [states, setStates] = useState<MotorState[]>(initialConfigs.map(() => ({ angle: 0, angularVelocity: 0, integral: 0, prevError: 0 })));
+  const statesRef = useRef<MotorState[]>(initialConfigs.map(() => ({ angle: 0, angularVelocity: 0, integral: 0, prevError: 0 })));
   const [targetAngle, setTargetAngle] = useState<number>(Math.PI / 2);
   const [disturbance, setDisturbance] = useState(0.2);
   const [isRunning, setIsRunning] = useState(true);
@@ -167,19 +168,19 @@ export default function ComparisonPlayground() {
     if (!ctx) return;
     if (!isVisible) return;
 
-    let currentStates = [...states];
     const loop = () => {
       if (isRunning) {
-        currentStates = currentStates.map((state, idx) => simulate(state, targetAngle, configs[idx], disturbance));
-        setStates(currentStates);
-        currentStates.forEach((state, idx) => {
+        const newStates = statesRef.current.map((state, idx) => simulate(state, targetAngle, configs[idx], disturbance));
+        statesRef.current = newStates;
+        setStates(newStates);
+        newStates.forEach((state, idx) => {
           historiesRef.current[idx].push(normalizeAngle(state.angle));
           if (historiesRef.current[idx].length > 300) historiesRef.current[idx].shift();
         });
         targetHistoryRef.current.push(targetAngle);
         if (targetHistoryRef.current.length > 300) targetHistoryRef.current.shift();
       }
-      draw(ctx, currentStates, targetAngle, historiesRef.current, targetHistoryRef.current, configs);
+      draw(ctx, statesRef.current, targetAngle, historiesRef.current, targetHistoryRef.current, configs);
       animationRef.current = requestAnimationFrame(loop);
     };
     animationRef.current = requestAnimationFrame(loop);
@@ -187,8 +188,10 @@ export default function ComparisonPlayground() {
   }, [simulate, draw, targetAngle, isRunning, isVisible, configs, disturbance]);
 
   const handleReset = () => {
+    const initialStates = initialConfigs.map(() => ({ angle: 0, angularVelocity: 0, integral: 0, prevError: 0 }));
+    statesRef.current = initialStates;
     setConfigs(initialConfigs);
-    setStates(initialConfigs.map(() => ({ angle: 0, angularVelocity: 0, integral: 0, prevError: 0 })));
+    setStates(initialStates);
     historiesRef.current = initialConfigs.map(() => []);
     targetHistoryRef.current = [];
     setTargetAngle(Math.PI / 2);

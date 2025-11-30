@@ -27,6 +27,7 @@ export default function InvertedPendulum() {
   const [state, setState] = useState<PendulumState>({
     cartX: 0, cartVelocity: 0, angle: 0.05, angularVelocity: 0, integral: 0, prevError: 0,
   });
+  const stateRef = useRef<PendulumState>(state);
   const [kp, setKp] = useState(DEFAULT_KP);
   const [kd, setKd] = useState(DEFAULT_KD);
   const [isRunning, setIsRunning] = useState(true);
@@ -192,17 +193,17 @@ export default function InvertedPendulum() {
     if (!ctx) return;
     if (!isVisible) return;
 
-    let currentState = state;
     const loop = () => {
       if (isRunning && !hasFallen) {
-        currentState = simulate(currentState, kp, kd, controlEnabled);
-        setState(currentState);
-        if (Math.abs(currentState.angle) > Math.PI / 2) setHasFallen(true);
+        const newState = simulate(stateRef.current, kp, kd, controlEnabled);
+        stateRef.current = newState;
+        setState(newState);
+        if (Math.abs(newState.angle) > Math.PI / 2) setHasFallen(true);
       }
-      const error = -currentState.angle;
-      const derivative = (error - currentState.prevError) / DT;
+      const error = -stateRef.current.angle;
+      const derivative = (error - stateRef.current.prevError) / DT;
       const force = controlEnabled ? Math.max(-MAX_FORCE, Math.min(MAX_FORCE, kp * error + kd * derivative)) : 0;
-      draw(ctx, currentState, force);
+      draw(ctx, stateRef.current, force);
       animationRef.current = requestAnimationFrame(loop);
     };
     animationRef.current = requestAnimationFrame(loop);
@@ -210,7 +211,9 @@ export default function InvertedPendulum() {
   }, [simulate, draw, isRunning, isVisible, kp, kd, controlEnabled, hasFallen]);
 
   const handleReset = () => {
-    setState({ cartX: 0, cartVelocity: 0, angle: 0.05, angularVelocity: 0, integral: 0, prevError: 0 });
+    const initialState = { cartX: 0, cartVelocity: 0, angle: 0.05, angularVelocity: 0, integral: 0, prevError: 0 };
+    stateRef.current = initialState;
+    setState(initialState);
     setHasFallen(false);
     setKp(DEFAULT_KP);
     setKd(DEFAULT_KD);

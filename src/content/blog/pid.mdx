@@ -109,21 +109,37 @@ $$
 
 Think of it like this: the integral term is *patient*. It doesn't care if the error is small right now. If that small error has been there for a while, the integral builds up and eventually overwhelms any disturbance.
 
-<PIDDemo client:load enableD={true} enableI={true} enableMass={true} enableNoise={true} initialKp={2.0} initialKd={0.8} initialKi={0.3} initialMass={0.5} />
+<PIDDemo client:load enableD={true} enableI={true} enableMass={true} enableNoise={true} showClampingToggle={true} initialKp={2.0} initialKd={0.8} initialKi={0.5} initialMass={0.5} />
 
 The integral term eliminates steady-state error beautifully! Now the pointer reaches the target exactly, even with the mass pulling it down.
 
 ### Integral Windup
 
-But there's a catch: the integral term can cause problems of its own. When there's a large error for a long time (like during startup), the integral accumulates a huge value. Even after reaching the target, this "wound up" integral causes overshoot and slow settling. This is called **integral windup**.
+But there's a catch: the integral term can cause problems of its own. **To see windup in action:**
 
-The demo above uses **clamping** to prevent windup&mdash;the integral is limited to a maximum value (±10 in this case). Other strategies include:
+1. Click the **lock icon** (turns orange) to hold the pointer in place&mdash;this simulates a blocked motor
+2. Move the target to the opposite side
+3. Wait a few seconds while the integral accumulates
+4. Click the lock again to release&mdash;watch the pointer violently overshoot and oscillate!
+
+What happened? While the pointer was blocked, the PID controller kept trying to reach the target. The integral accumulated a *huge* value because the error persisted. When the blockage was removed, all that wound-up integral caused massive overshoot. This is **integral windup**&mdash;it happens during startup, when actuators saturate, or when something physically blocks the mechanism.
+
+**Now try again with clamping enabled:**
+
+1. Click reset, then click the **clamp icon** (turns green) to enable clamping
+2. Enable the **lock** (orange) again
+3. Move the target to the opposite side and wait
+4. Release the lock&mdash;much better behavior!
+
+With clamping enabled (green), the integral is limited, preventing runaway accumulation.
+
+**Other anti-windup strategies include:**
 
 - **Conditional integration**: Only accumulate integral when close to the target
-- **Back-calculation**: Reduce integral when output saturates
+- **Back-calculation**: Reduce integral when output saturates  
 - **Recency-weighted integration**: Give more weight to recent errors, letting old errors "decay"
 
-Each approach has tradeoffs, but clamping is the most common starting point.
+Each approach has tradeoffs, but clamping is the most common starting point because it's simple and effective.
 
 ---
 
