@@ -146,7 +146,7 @@ export default function TuningChallenge() {
 			const radius = 95;
 
 			ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-			ctx.fillStyle = "#0a0a0a";
+			ctx.fillStyle = "#000000";
 			ctx.fillRect(0, 0, width, height);
 
 			// Motor body (black dial)
@@ -380,7 +380,7 @@ export default function TuningChallenge() {
 	return (
 		<div
 			ref={containerRef}
-			className="not-prose flex flex-col gap-5 p-6 bg-zinc-950 w-full rounded-3xl"
+			className="not-prose flex flex-col gap-5 p-6 bg-black w-full rounded-3xl"
 		>
 			{/* Challenge selector */}
 			<div className="flex flex-wrap gap-2 justify-center">

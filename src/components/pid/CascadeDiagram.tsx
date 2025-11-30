@@ -30,7 +30,7 @@ export default function CascadeDiagram() {
 		if (!ctx) return;
 
 		ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-		ctx.fillStyle = "#0a0a0a";
+		ctx.fillStyle = "#000000";
 		ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
 		// Layout

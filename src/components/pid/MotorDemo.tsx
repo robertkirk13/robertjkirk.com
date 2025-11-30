@@ -102,7 +102,7 @@ export default function MotorDemo({ showPlot = true, showControls = true }: Moto
 
     // Clear and scale for high DPI
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.fillStyle = '#09090b'; // zinc-950
+    ctx.fillStyle = '#000000'; // pure black
     ctx.fillRect(0, 0, width, height);
 
     // Draw full semicircle track (0° to 180°)
@@ -302,7 +302,7 @@ export default function MotorDemo({ showPlot = true, showControls = true }: Moto
 
     // Clear and scale for high DPI
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.fillStyle = '#09090b'; // zinc-950
+    ctx.fillStyle = '#000000'; // pure black
     ctx.fillRect(0, 0, width, height);
 
     const plotTop = padding + 10;
@@ -505,7 +505,7 @@ export default function MotorDemo({ showPlot = true, showControls = true }: Moto
   };
 
   return (
-    <div ref={containerRef} className="not-prose flex flex-col gap-4 p-6 bg-zinc-950 w-full rounded-3xl">
+    <div ref={containerRef} className="not-prose flex flex-col gap-4 p-6 bg-black w-full rounded-3xl">
       <div className="flex flex-col md:flex-row gap-4 items-start w-full">
         {/* Left: visualization */}
         <div className="flex-1 flex flex-col items-center min-w-0 pb-4">

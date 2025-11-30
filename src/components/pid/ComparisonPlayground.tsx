@@ -104,7 +104,7 @@ export default function ComparisonPlayground() {
 			const padding = 46;
 
 			ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-			ctx.fillStyle = "#0a0a0a";
+			ctx.fillStyle = "#000000";
 			ctx.fillRect(0, 0, width, height);
 
 			// Grid lines
@@ -286,7 +286,7 @@ export default function ComparisonPlayground() {
 	return (
 		<div
 			ref={containerRef}
-			className="not-prose flex flex-col gap-4 p-6 bg-zinc-950 w-full rounded-3xl"
+			className="not-prose flex flex-col gap-4 p-6 bg-black w-full rounded-3xl"
 		>
 			<div className="flex flex-col items-center min-w-0">
 				<canvas

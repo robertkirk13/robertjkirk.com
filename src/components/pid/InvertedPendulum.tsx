@@ -148,7 +148,7 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 			const height = CANVAS_HEIGHT;
 
 			ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-			ctx.fillStyle = "#0a0a0a";
+			ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, width, height);
 
 			const groundY = height * 0.75;
@@ -512,7 +512,7 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
   return (
 		<div
 			ref={containerRef}
-			className="not-prose flex flex-col gap-4 p-6 bg-zinc-950 w-full rounded-3xl"
+			className="not-prose flex flex-col gap-4 p-6 bg-black w-full rounded-3xl"
 		>
 			<div className="flex flex-col items-center min-w-0">
 				<div className="relative w-full max-w-[500px]">

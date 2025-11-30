@@ -96,7 +96,7 @@ export default function OvenController() {
 			const height = OVEN_HEIGHT;
 
 			ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-			ctx.fillStyle = "#0a0a0a";
+			ctx.fillStyle = "#000000";
 			ctx.fillRect(0, 0, width, height);
 
 			const ovenX = 30;
@@ -198,7 +198,7 @@ export default function OvenController() {
 			const padding = 46;
 
 			ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-			ctx.fillStyle = "#0a0a0a";
+			ctx.fillStyle = "#000000";
 			ctx.fillRect(0, 0, width, height);
 
 			// Grid
@@ -373,7 +373,7 @@ export default function OvenController() {
 	return (
 		<div
 			ref={containerRef}
-			className="not-prose flex flex-col gap-4 p-6 bg-zinc-950 w-full rounded-3xl"
+			className="not-prose flex flex-col gap-4 p-6 bg-black w-full rounded-3xl"
 		>
 			<div className="flex flex-col md:flex-row gap-4 items-start w-full">
 				<div className="flex-1 flex flex-col items-center min-w-0">

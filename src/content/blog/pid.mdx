@@ -1,5 +1,5 @@
 ---
-title: "Understanding PID Controllers"
+title: "The Hidden Magic of PID Controllers"
 date: "2025-11-30"
 formattedDate: "November 30, 2025"
 description: "An interactive exploration of proportional, integral, and derivative control systems."
@@ -42,9 +42,11 @@ Let's start with something concrete. Imagine you have a motor attached to a <spa
 
 The catch is **inertia**. The pointer has mass, and mass doesn't like to change direction. If you're spinning toward the target and cut the power when you arrive, you'll overshoot. The momentum you built up carries you past where you wanted to stop.
 
+Try dragging the orange handle to set a new target angle and see how the system responds:
+
 <MotorDemo client:load />
 
-See the problem? The motor has no idea it should slow down as it approaches the target. It's running at full speed right up until it arrives, then wondering why it can't stop. We need something smarter.
+The motor has no idea it should slow down as it approaches the target! It's providing full torque right up until it passes the target angle, then switching to full reverse torque. This is why the pointer oscillates; in fact, it never settles down. We need something smarter.
 
 ---
 
@@ -101,9 +103,14 @@ If you're approaching the target quickly, the derivative term applies a braking 
 
 Notice how adding the D term dramatically reduces oscillation! The system now settles smoothly to the target instead of bouncing back and forth. Try setting Kd to 0 to see the difference&mdash;the oscillation returns immediately.
 
-### The Noise Problem
+<div className="my-6 p-5 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+<div className="flex items-center gap-2 mb-3 text-amber-400 font-medium">
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="m6.41 6.41 2.83 2.83"/><path d="M2 12h4"/><path d="m6.41 17.59 2.83-2.83"/><path d="M12 18v4"/><path d="m17.59 17.59-2.83-2.83"/><path d="M18 12h4"/><path d="m17.59 6.41-2.83 2.83"/></svg>
+Bonus: The Noise Problem
+</div>
 
 Try enabling the **Noise** button to see why the D term can be problematic in real systems. Because D responds to *changes* in the error, it amplifies any sensor noise. In real applications, this often requires filtering the derivative signal or limiting D's contribution. This is why many practitioners recommend starting with just PI control and only adding D when necessary.
+</div>
 
 ---
 
@@ -135,9 +142,13 @@ Think of it like this: the integral term is *patient*. It doesn't care if the er
 
 The integral term eliminates steady-state error beautifully! Now the pointer reaches the target exactly, even with the mass pulling it down.
 
-### Integral Windup
+<div className="my-6 p-5 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+<div className="flex items-center gap-2 mb-3 text-amber-400 font-medium">
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="m6.41 6.41 2.83 2.83"/><path d="M2 12h4"/><path d="m6.41 17.59 2.83-2.83"/><path d="M12 18v4"/><path d="m17.59 17.59-2.83-2.83"/><path d="M18 12h4"/><path d="m17.59 6.41-2.83 2.83"/></svg>
+Bonus: Integral Windup
+</div>
 
-But there's a catch: the integral term can cause problems of its own. **To see windup in action:**
+The integral term can cause problems of its own. **To see windup in action:**
 
 1. Click the **lock icon** (turns orange) to hold the pointer in place&mdash;this simulates a blocked motor
 2. Move the target to the opposite side
@@ -162,6 +173,7 @@ With clamping enabled (green), the integral is limited, preventing runaway accum
 - **Recency-weighted integration**: Give more weight to recent errors, letting old errors "decay"
 
 Each approach has tradeoffs, but clamping is the most common starting point because it's simple and effective.
+</div>
 
 ---
 
@@ -182,13 +194,18 @@ This sluggishness means:
 
 Try opening the door to see disturbance rejection! Watch how the integral term builds up to compensate for the increased heat loss.
 
-### Conditional Integration
+<div className="my-6 p-5 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+<div className="flex items-center gap-2 mb-3 text-amber-400 font-medium">
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="m6.41 6.41 2.83 2.83"/><path d="M2 12h4"/><path d="m6.41 17.59 2.83-2.83"/><path d="M12 18v4"/><path d="m17.59 17.59-2.83-2.83"/><path d="M18 12h4"/><path d="m17.59 6.41-2.83 2.83"/></svg>
+Bonus: Conditional Integration
+</div>
 
 Try enabling **Conditional I** (the button with the circle icon). With this enabled, the integral only accumulates when the temperature is within 50° of the target. This prevents the integral from winding up during the initial heating phase when the error is huge.
 
 Watch the difference: without conditional I, the oven may overshoot slightly during startup because the integral accumulated while far from target. With conditional I enabled, the integral only kicks in during the final approach, providing a cleaner response.
 
 This is a classic example of when PI control is not just sufficient, but preferable&mdash;adding D would just amplify sensor noise without providing much benefit.
+</div>
 
 ---
 
@@ -258,7 +275,13 @@ The art of PID control is choosing Kp, Ki, and Kd to work in harmony. Each syste
 
 <TuningChallenge client:load />
 
-**Hints for each challenge:**
+<div className="my-6 p-5 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+<div className="flex items-center gap-2 mb-3 text-amber-400 font-medium">
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+Hints &amp; Tips
+</div>
+
+**For each challenge:**
 
 - **Basics**: P alone can solve this, but D makes it cleaner
 - **Weighted**: The mass creates steady-state error&mdash;you'll need I to fix it
@@ -270,6 +293,7 @@ The art of PID control is choosing Kp, Ki, and Kd to work in harmony. Each syste
 1. **Start with P only**: Increase until it responds but oscillates
 2. **Add D**: Dampen the oscillation until minimal overshoot
 3. **Add I if needed**: Only when there's persistent error (mass challenges)
+</div>
 
 ---
 
