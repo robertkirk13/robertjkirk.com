@@ -11,16 +11,26 @@ import MotorDemo from "../../components/pid/MotorDemo";
 import PIDDemo from "../../components/pid/PIDDemo";
 import OvenController from "../../components/pid/OvenController";
 import InvertedPendulum from "../../components/pid/InvertedPendulum";
+import CascadeDiagram from "../../components/pid/CascadeDiagram";
+import ControlLoopDiagram from "../../components/pid/ControlLoopDiagram";
+import TuningChallenge from "../../components/pid/TuningChallenge";
 import ComparisonPlayground from "../../components/pid/ComparisonPlayground";
 
 You've probably used a PID controller today without knowing it. They're in your car's cruise control, your home thermostat, the quadcopter you flew last weekend, and the robotic arm that assembled your phone. PID controllers are everywhere because they solve a fundamental problem: **how do you get something to go where you want it to go, and stay there?**
 
-<div className="flex items-center gap-3 px-4 py-3 bg-orange-950/30 border border-orange-900/50 rounded-xl my-6">
-  <div className="w-5 h-5 rounded-full bg-orange-500 flex-shrink-0 shadow-lg shadow-orange-500/30 cursor-grab active:cursor-grabbing hover:bg-orange-400 transition-colors" />
-  <span className="text-orange-300/90 text-sm">
-    <span className="text-orange-400 font-medium">Orange elements are interactive</span> &mdash; drag them to explore!
+<div className="flex items-center gap-3 my-6">
+  <div className="w-5 h-5 rounded-full bg-orange-500 border-2 border-orange-300 flex-shrink-0 shadow-lg shadow-orange-500/30" style={{animation: "pulse-size 2s ease-in-out infinite"}} />
+  <span className="text-zinc-400 text-sm">
+    <span className="text-orange-400 font-medium">Orange elements are interactive</span> — click or drag to explore
   </span>
 </div>
+
+<style>{`
+  @keyframes pulse-size {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+  }
+`}</style>
 
 In this post, we're going to build an intuition for how PID controllers work. We'll start with the simplest possible controller and gradually add complexity. By the end, you'll understand not just *what* each term does, but *why* it's needed.
 
@@ -49,6 +59,18 @@ $$
 </div>
 
 Where **Error** = Target &minus; Current Position, and **Kp** is a gain that determines how aggressive the response is.
+
+Here's how the control loop works:
+
+<ControlLoopDiagram client:load />
+
+The system continuously:
+1. **Measures** the current position (feedback)
+2. **Computes** the error = target − current
+3. **Outputs** torque proportional to that error
+4. Repeat at ~60 times per second
+
+This creates a **closed-loop system**&mdash;the controller constantly adjusts based on what it observes. Now let's see it in action:
 
 <PIDDemo client:load initialKp={1.5} />
 
@@ -143,32 +165,6 @@ Each approach has tradeoffs, but clamping is the most common starting point beca
 
 ---
 
-## Summary: The Complete Picture
-
-Now you've seen all three terms in action:
-
-| Term | Looks at | Effect | Fixes | Can cause |
-|------|----------|--------|-------|-----------|
-| **P** | Present error | Push toward target | Slow response | Overshoot, oscillation |
-| **D** | Future error (rate) | Brake before arrival | Overshoot, oscillation | Noise sensitivity |
-| **I** | Past error (sum) | Eliminate steady-state error | Steady-state error | Windup, slow response |
-
----
-
-## Tuning: Making It All Work Together
-
-The art of PID control is choosing Kp, Ki, and Kd to work in harmony. Each system is different&mdash;the mass of the pointer, the power of the motor, the amount of friction&mdash;all affect what gains work best.
-
-Here's a common tuning approach:
-
-1. **Start with just P**: Increase Kp until the system responds quickly but oscillates
-2. **Add D**: Increase Kd to dampen the oscillation until it just barely overshoots
-3. **Add I**: Increase Ki to eliminate any remaining steady-state error (use sparingly!)
-
-The full PID demo above is perfect for experimenting with this. Try starting with only Kp, then incrementally adding the other terms.
-
----
-
 ## Beyond the Pointer: Temperature Control
 
 Let's see how the same principles apply to a completely different system: controlling the temperature of an oven. This is closer to what you'd find in a real kitchen oven, a reflow soldering station, or an industrial furnace.
@@ -200,28 +196,96 @@ This is a classic example of when PI control is not just sufficient, but prefera
 
 For our final example, let's look at one of the most dramatic demonstrations of PID control: balancing an inverted pendulum. This is the classic "broom balancing on your palm" problem, and it's the same principle behind Segways and rocket landing.
 
-<InvertedPendulum client:load />
+<InvertedPendulum client:load showPositionControl={false} />
 
-The inverted pendulum shows something important: some systems **require** derivative control. With only proportional control (try setting Kd to 0), the pendulum oscillates with increasing amplitude until it falls. The derivative term provides the crucial damping that keeps it upright.
+The pendulum balances! But wait&mdash;watch what happens over time. Click the cart to poke it and observe: eventually the cart **crashes into the edge of the track**. The PD controller is doing its job of keeping the pendulum upright, but it has no concept of *where* the cart is on the track.
+
+This is the classic problem of **cascaded control**. We have one controller for the angle, but we need *another* controller to manage position. The solution is to add a second PD loop:
+
+<CascadeDiagram client:load />
+
+Here's the key insight. Without the outer position loop, the inner angle loop always tries to keep the pendulum at 0° (vertical). But with the outer loop, we *bias* that target slightly off-vertical to push the cart back toward center:
+
+```js
+// Outer loop: where should the pendulum lean?
+positionError = targetPosition - cartPosition
+targetAngle = Kp_pos * positionError + Kd_pos * cartVelocity
+
+// Inner loop: achieve that lean angle
+angleError = targetAngle - pendulumAngle  // NOT just "0 - angle"!
+motorForce = Kp_angle * angleError + Kd_angle * angularVelocity
+```
+
+If the cart drifts right, the position loop outputs a small **negative target angle**&mdash;telling the pendulum to lean slightly left. This creates a force that pushes the cart back. The inner angle loop doesn't care *why* it's being told to lean; it just does its job of achieving that angle smoothly.
+
+<InvertedPendulum client:load showPositionControl={true} />
+
+Now we have two control loops working together:
+
+1. **Angle Control** (Kp<sub>θ</sub>, Kd<sub>θ</sub>): Fast inner loop that keeps the pendulum at whatever angle it's told
+2. **Position Control** (Kp<sub>x</sub>, Kd<sub>x</sub>): Slower outer loop that adjusts that target angle to control cart position
+
+The position controller adds a gentle bias to the angle controller's target, nudging the cart back toward center without destabilizing the balance.
 
 Try these experiments:
+- **Drag the orange handle** to set a new target position and watch the cart smoothly move there while staying balanced
+- **Click the cart** to poke it and watch both controllers work to recover
+- **Set position Kp<sub>x</sub> = 0** to see it drift off track like before
 - **Turn off control** to see how quickly the system is unstable
-- **Set Kd = 0** to see oscillations grow and cause failure
-- **Click "Poke"** to add a disturbance and watch recovery
+- **Set Kd<sub>θ</sub> = 0** to see angle oscillations grow and cause failure
+
+This cascaded structure&mdash;an inner loop for fast dynamics (angle) and an outer loop for slower dynamics (position)&mdash;is extremely common in real control systems. Quadcopters use it (attitude inner loop, position outer loop), as do robotic arms and self-balancing robots.
+
+---
+
+## Summary: The Complete Picture
+
+Now you've seen all three terms in action:
+
+| Term | Looks at | Effect | Fixes | Can cause |
+|------|----------|--------|-------|-----------|
+| **P** | Present error | Push toward target | Slow response | Overshoot, oscillation |
+| **D** | Future error (rate) | Brake before arrival | Overshoot, oscillation | Noise sensitivity |
+| **I** | Past error (sum) | Eliminate steady-state error | Steady-state error | Windup, slow response |
+
+---
+
+## Tuning Challenge
+
+The art of PID control is choosing Kp, Ki, and Kd to work in harmony. Each system is different&mdash;the mass of the pointer, the power of the motor, the amount of friction&mdash;all affect what gains work best.
+
+**Can you tune a PID controller?** Try each challenge and beat the par time. The gains start at non-functional values&mdash;you'll need to figure out what works!
+
+<TuningChallenge client:load />
+
+**Hints for each challenge:**
+
+- **Basics**: P alone can solve this, but D makes it cleaner
+- **Weighted**: The mass creates steady-state error&mdash;you'll need I to fix it
+- **Big Step**: Large movements need careful D tuning to avoid overshoot
+- **Heavy**: Maximum mass requires all three terms working together
+
+**General tuning approach:**
+
+1. **Start with P only**: Increase until it responds but oscillates
+2. **Add D**: Dampen the oscillation until minimal overshoot
+3. **Add I if needed**: Only when there's persistent error (mass challenges)
 
 ---
 
 ## Comparison Playground
 
-Finally, here's a playground where you can compare different control strategies side-by-side. Watch how No Control, P-only, PD, and full PID respond to the same target:
+Finally, here's a playground where you can compare P, PD, and PID controllers side-by-side. All three controllers are trying to reach the same target&mdash;watch how they differ:
 
 <ComparisonPlayground client:load />
 
-Try clicking "Random Target" repeatedly to see how each controller handles different step inputs. Notice how:
-- **No Control** just drifts with the disturbance
-- **P-only** gets close but oscillates
-- **PD** settles quickly but may have steady-state error with disturbances
-- **PID** balances fast response with minimal overshoot and no steady-state error
+Click **Random Target** (🎲) to see how each handles step changes. Increase the **Mass** to add a disturbance and observe:
+
+- **P** (blue): Gets close but oscillates, and has steady-state error when mass is added
+- **PD** (purple): Settles quickly with minimal overshoot, but still has steady-state error with mass
+- **PID** (green): Smooth response AND eliminates steady-state error&mdash;the integral term compensates for the mass
+
+This is the power of combining all three terms: P provides responsiveness, D provides damping, and I eliminates persistent error.
 
 ---
 
