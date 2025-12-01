@@ -4,6 +4,7 @@ import { getCollection } from "astro:content";
 
 import ContactCard from "../components/ContactCard.astro";
 import TimelineEntry from "../components/TimelineEntry.astro";
+import WritingFilter from "../components/WritingFilter";
 
 import astroLogo from "../assets/rjk.svg";
 import Layout from "../layouts/Layout.astro";
@@ -13,6 +14,16 @@ const posts = await getCollection("blog");
 const sortedPosts = posts.sort(
 	(a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
 );
+
+// Prepare posts data for client component
+const postsData = sortedPosts.map(post => ({
+	slug: post.slug,
+	title: post.data.title,
+	description: post.data.description,
+	formattedDate: post.data.formattedDate,
+	readingTime: post.data.readingTime,
+	category: post.data.category,
+}));
 
 // Get the latest post and the rest
 const [latestPost, ...previousPosts] = sortedPosts;
@@ -132,63 +143,11 @@ const currentYear = new Date().getFullYear();
               </a>
             </div>
 
-            <div class="space-y-4">
-              <!-- Featured Latest Post -->
-              {latestPost && (
-                <a
-                  href={`/writing/${latestPost.slug}`}
-                  class="block group bg-gray-50 dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-gray-200 dark:border-neutral-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all"
-                >
-                  <div class="flex items-center gap-2 mb-3">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="lucide lucide-sparkles text-blue-600"
-                    >
-                      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
-                    </svg>
-                    <span class="text-sm font-semibold text-blue-600 uppercase tracking-wide">
-                      Latest Post
-                    </span>
-                  </div>
-                  <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" transition:name={`title-${latestPost.slug}`}>
-                    {latestPost.data.title}
-                  </h2>
-                  <p class="text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                    {latestPost.data.description}
-                  </p>
-                  <div class="flex items-center gap-3 text-sm text-gray-500">
-                    <span>{latestPost.data.formattedDate}</span>
-                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-                    <span>{latestPost.data.readingTime} min read</span>
-                  </div>
-                </a>
-              )}
-
-              <!-- Other Posts -->
-              {previousPosts.slice(0, 3).map((post) => (
-                <a
-                  href={`/writing/${post.slug}`}
-                  class="block group bg-gray-50 dark:bg-neutral-900 rounded-2xl p-5 border border-gray-200 dark:border-neutral-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all"
-                >
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2" transition:name={`title-${post.slug}`}>
-                    {post.data.title}
-                  </h4>
-                  <div class="flex items-center gap-2 text-sm text-gray-500">
-                    <span>{post.data.formattedDate}</span>
-                    <span class="inline-block w-1 h-1 rounded-full bg-gray-400"></span>
-                    <span>{post.data.readingTime} min read</span>
-                  </div>
-                </a>
-              ))}
-            </div>
+            <WritingFilter 
+              client:load 
+              posts={postsData} 
+              showLatestFeatured={true} 
+            />
           </div>
         </div>
 
