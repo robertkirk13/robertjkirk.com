@@ -66,6 +66,7 @@ interface Props {
           </defs>
         </svg>
       </a>
+      <!-- NAVBAR COMMENTED OUT
       <div
         class="xl:left-8 xl:top-24 xl:-translate-y-0 fixed top-4 left-1/2 -translate-x-1/2 xl:-translate-x-0 mx-auto w-fit z-50 transition-all duration-300"
       >
@@ -75,19 +76,10 @@ interface Props {
             transition:name="navigation"
             transition:animate="none"
           >
-            <!-- Navigation - vertical on desktop, horizontal on mobile -->
             <nav
               class="flex xl:flex-col items-center gap-2 xl:h-auto px-1 py-1"
             >
-              <!-- Logo -->
-
-              <!-- Center Icons -->
               <div class="flex xl:flex-col items-center gap-1 xl:pt-0">
-                <!-- <button class="p-3 rounded-md hover:bg-black/5 transition-all duration-300 group">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open-text"><path d="M12 7v14"/><path d="M16 12h2"/><path d="M16 8h2"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/><path d="M6 12h2"/><path d="M6 8h2"/></svg>
-                        <p class="  ml-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-    Hello, world</p>
-						</button> -->
                 <a
                   href="/"
                   aria-label="home"
@@ -190,13 +182,12 @@ interface Props {
                   >
                 </a>
               </div>
-
-              <!-- Share Icon -->
             </nav>
           </header>
         </div>
       </div>
       <div class="xl:h-0 h-16 transition-all" transition:animate="slide"></div>
+      END NAVBAR COMMENTED OUT -->
 
       <main transition:name="main-content" transition:animate="fade">
         <slot />

@@ -16,7 +16,7 @@ const sortedPosts = posts.sort(
 );
 
 // Prepare posts data for client component
-const postsData = sortedPosts.map(post => ({
+const postsData = sortedPosts.map((post) => ({
 	slug: post.slug,
 	title: post.data.title,
 	description: post.data.description,
@@ -43,58 +43,31 @@ const currentYear = new Date().getFullYear();
 ---
 
 <Layout>
-  <div class="min-h-screen p-4 md:p-8 flex flex-col">
-    <div class="max-w-6xl mx-auto space-y-6 flex-grow w-full">
-      <!-- Hero Section - Compact -->
-      <div
-        class="bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10 rounded-3xl border border-gray-200 dark:border-neutral-900 p-6 md:p-8"
-      >
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div class="flex-grow">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
-              Hi, I'm Rob
-            </h1>
-            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
-              Electrical and computer engineering student with an entrepreneurial spirit at UT Austin.
-            </p>
-          </div>
-          <div class="flex flex-col sm:flex-row gap-3">
-            <a
-              href="/writing/about"
-              class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-all hover:scale-105 flex items-center gap-2 justify-center"
-            >
-              Learn More
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-arrow-right"
-              >
-                <path d="M5 12h14"></path>
-                <path d="m12 5 7 7-7 7"></path>
-              </svg>
-            </a>
-            <a
-              href="/contact"
-              class="px-6 py-3 bg-white dark:bg-neutral-900 hover:bg-gray-50 dark:hover:bg-neutral-800 text-gray-900 dark:text-white rounded-xl font-medium transition-all border border-gray-200 dark:border-neutral-800 hover:scale-105 flex items-center justify-center"
-            >
-              Get in Touch
-            </a>
-          </div>
+  <div class="min-h-screen p-4 md:p-6 flex flex-col">
+    <div class="max-w-3xl mx-auto space-y-4 flex-grow w-full">
+      <!-- Hero Section - Clean -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-2">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+            Robert Kirk
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-1">
+            I work at the intersection of software and hardware to solve hard problems.
+          </p>
         </div>
+        <a
+          href="/contact"
+          class="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-sm rounded-full font-medium transition-all hover:scale-105"
+        >
+          Contact me
+        </a>
       </div>
 
       <!-- Main Content Grid - Asymmetric Layout -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 gap-4">
         <!-- Left Column: Combined Writing Section -->
-        <div class="lg:col-span-2">
-          <div class="bg-white dark:bg-black rounded-3xl p-6 md:p-8 border border-gray-200 dark:border-neutral-900">
+        <div>
+          <div class="bg-white dark:bg-neutral-950 rounded-3xl p-4 md:p-6 border border-gray-200 dark:border-neutral-800">
             <div class="flex justify-between items-center mb-6">
               <div class="flex items-center gap-3">
                 <svg
@@ -151,18 +124,17 @@ const currentYear = new Date().getFullYear();
           </div>
         </div>
 
-        <!-- Right Column: Current Position + Activities -->
-        <div class="space-y-6">
-          <!-- Current Position -->
+        <!-- RIGHT COLUMN COMMENTED OUT
+        <div class="space-y-4">
           {currentPosition && (
-            <div class="bg-white dark:bg-black rounded-3xl p-6 border border-gray-200 dark:border-neutral-900">
+            <div class="bg-white dark:bg-neutral-950 rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-neutral-800">
               <div class="flex items-center gap-2 mb-4">
                 <div class="relative flex h-3 w-3">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                 </div>
-                <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
-                  Currently Working On
+                <h3 class="text-sm font-semibold text-green-600 dark:text-green-400 uppercase tracking-wide">
+                   Working On
                 </h3>
               </div>
               <a
@@ -209,14 +181,14 @@ const currentYear = new Date().getFullYear();
             </div>
           )}
 
-          <!-- Contact Card -->
-          <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-900 dark:to-neutral-800 rounded-3xl p-6 border border-gray-200 dark:border-neutral-800">
+          <div class="bg-white dark:bg-neutral-950 rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-neutral-800">
             <ContactCard
               email="hi@robertjkirk.com"
               linkedin="robertjkirk"
             />
           </div>
         </div>
+        END RIGHT COLUMN COMMENTED OUT -->
       </div>
     </div>
   </div>
