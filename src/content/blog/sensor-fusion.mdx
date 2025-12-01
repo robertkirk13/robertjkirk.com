@@ -1,0 +1,248 @@
+---
+title: "The Art of Sensor Fusion"
+date: "2025-12-01"
+formattedDate: "December 1, 2025"
+coverImage: "../../assets/sensor-fusion.png"
+description: "An interactive exploration of how to combine noisy sensor data into reliable estimates using complementary and Kalman filters."
+readingTime: 20
+tags: ["estimation", "engineering", "interactive"]
+category: "Interactive"
+---
+
+import NoisySensorDemo from "../../components/sensor-fusion/NoisySensorDemo";
+import AccelerometerDemo from "../../components/sensor-fusion/AccelerometerDemo";
+import GyroscopeDemo from "../../components/sensor-fusion/GyroscopeDemo";
+import ComplementaryFilterDemo from "../../components/sensor-fusion/ComplementaryFilterDemo";
+import ComplementaryFilterDiagram from "../../components/sensor-fusion/ComplementaryFilterDiagram";
+import KalmanFilterDemo from "../../components/sensor-fusion/KalmanFilterDemo";
+import KalmanFilterDiagram from "../../components/sensor-fusion/KalmanFilterDiagram";
+import IMUFusionDemo from "../../components/sensor-fusion/IMUFusionDemo";
+import FusionChallenge from "../../components/sensor-fusion/FusionChallenge";
+
+Every robot, drone, and self-driving car faces the same fundamental problem: **sensors lie**. An accelerometer rattles with every vibration. A gyroscope slowly drifts away from reality. GPS jumps around by meters. Yet somehow, your phone knows exactly which way is up, and aircraft land safely in fog. The secret? **Sensor fusion**—the art of combining imperfect measurements into something better than any single sensor could provide.
+
+In this post, we'll build intuition for how sensor fusion works. We'll start with the problem—noisy, unreliable sensors—and progressively build up to elegant solutions that power everything from smartphones to spacecraft.
+
+---
+
+## Sensors in a Noisy World
+
+Let's start with something simple: measuring position. Imagine you have a sensor that tells you where an object is. In theory, this should be straightforward. In practice, every measurement comes with **noise**—random errors that obscure the true value.
+
+<NoisySensorDemo client:load />
+
+The <span className="text-emerald-400 font-medium">green line</span> shows the true position we're trying to track. The <span className="text-blue-400 font-medium">blue dots</span> are what our sensor actually reports. Notice how the measurements scatter around the truth? That's sensor noise, and it's unavoidable in the real world.
+
+We could try to reduce noise by averaging multiple readings, but that introduces **lag**—by the time we've collected enough samples, the object has moved. We need something smarter.
+
+---
+
+## The Accelerometer
+
+Let's look at a real sensor: the **accelerometer**. This remarkable device measures acceleration, including the constant pull of gravity. By detecting which way "down" is, accelerometers can measure tilt angle.
+
+<AccelerometerDemo client:load />
+
+Try tilting the device and watch how the accelerometer responds. It's quite good at measuring tilt! But there's a catch—try enabling <span className="text-red-400 font-medium">vibration</span> and watch what happens.
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">The accelerometer's weakness</div>
+<span className="text-zinc-400">Accelerometers can't distinguish between gravity and motion. A phone sitting on a vibrating table looks like it's constantly tilting. This makes raw accelerometer data unreliable for anything that moves.</span>
+</div>
+
+The accelerometer gives us the **long-term truth** about orientation (gravity doesn't lie), but it's terrible at handling short-term disturbances.
+
+---
+
+## The Gyroscope
+
+Enter the **gyroscope**. Instead of measuring acceleration, it measures **angular velocity**—how fast you're rotating. To get angle from angular velocity, we integrate over time:
+
+<div class="py-6 my-6 text-center text-xl overflow-x-auto">
+
+$$
+angle = \int rate \, dt
+$$
+
+</div>
+
+This sounds perfect! No sensitivity to vibration, instant response to rotation. But there's a fatal flaw:
+
+<GyroscopeDemo client:load />
+
+Watch the gyroscope angle over time, even when the object is stationary. See how it slowly **drifts** away from truth? This is because gyroscopes have a tiny bias—a small constant error in the rate measurement. When you integrate a constant error, it grows linearly forever.
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">The gyroscope's weakness</div>
+<span className="text-zinc-400">Integration accumulates errors. Even a tiny 0.1°/s bias becomes 6° of error after just one minute, and 360° after an hour. Gyroscopes are great for short-term changes but drift hopelessly over time.</span>
+</div>
+
+So we have two sensors with **complementary** weaknesses:
+- **Accelerometer**: Accurate long-term, noisy short-term
+- **Gyroscope**: Accurate short-term, drifts long-term
+
+What if we could combine them?
+
+---
+
+## The Complementary Filter
+
+Here's the key insight: **trust each sensor for what it's good at**. Use the gyroscope for fast changes (high frequency), and use the accelerometer to correct drift (low frequency). This is the **complementary filter**.
+
+<div class="py-6 my-6 text-center text-xl overflow-x-auto">
+
+$$
+\hat{angle} = \alpha \cdot (\hat{angle}_{prev} + rate \cdot dt) + (1-\alpha) \cdot angle_{accel}
+$$
+
+</div>
+
+The parameter **α** controls how much we trust the gyroscope vs the accelerometer. A value close to 1 trusts the gyroscope more (fast response, more drift). A value close to 0 trusts the accelerometer more (slower response, less drift).
+
+Here's how the filter works:
+
+<ComplementaryFilterDiagram client:load />
+
+The gyroscope signal goes through a **high-pass filter** (keeps fast changes, removes slow drift), while the accelerometer goes through a **low-pass filter** (keeps the stable average, removes noise). Combined, they give us the best of both worlds.
+
+<ComplementaryFilterDemo client:load />
+
+Play with the **α** slider and observe:
+
+- **α close to 1**: Fast response, but drifts over time
+- **α close to 0**: Stable, but sluggish and noisy
+- **α around 0.98**: A good balance for most applications
+
+Enable vibration to see how the filter rejects high-frequency noise while still tracking the true angle.
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Why "complementary"?</div>
+<span className="text-zinc-400">The high-pass and low-pass filters are mathematical complements—they add up to 1 across all frequencies. This means we're using 100% of the available information, just from different sources for different frequency bands.</span>
+</div>
+
+---
+
+## The Kalman Filter
+
+The complementary filter works beautifully for many applications. But what if we want to be **optimal**? What if our sensors have different noise levels, or we have a model of how the system behaves? Enter the **Kalman filter**—one of the most important algorithms of the 20th century.
+
+The Kalman filter maintains two things:
+1. An **estimate** of the current state
+2. An **uncertainty** about that estimate
+
+It operates in a predict-update cycle:
+
+<KalmanFilterDiagram client:load />
+
+**Predict**: Use our model to predict where the state should be, and increase uncertainty (we're less sure after prediction).
+
+**Update**: When a measurement arrives, combine it with our prediction. The **Kalman gain** determines how much to trust the measurement vs the prediction.
+
+<div class="py-6 my-6 text-center text-xl overflow-x-auto">
+
+$$
+\hat{x} = \hat{x}_{pred} + K \cdot (z - \hat{x}_{pred})
+$$
+
+</div>
+
+The Kalman gain **K** is computed automatically based on how uncertain we are about our prediction (**Q** - process noise) versus how noisy the measurements are (**R** - measurement noise).
+
+<KalmanFilterDemo client:load />
+
+Play with the noise parameters:
+
+- **High Q (process noise)**: We don't trust our model, so we weight measurements more heavily
+- **High R (measurement noise)**: We don't trust measurements, so we weight our model more heavily
+
+The Kalman filter automatically finds the optimal balance. Watch the <span className="text-emerald-400 font-medium">uncertainty band</span> grow during prediction and shrink after each measurement.
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Optimality guarantee</div>
+<span className="text-zinc-400">For linear systems with Gaussian noise, the Kalman filter is provably optimal—no other algorithm can do better. This mathematical guarantee is why it's used in everything from GPS to the Apollo guidance computer.</span>
+</div>
+
+---
+
+## IMU Fusion Playground
+
+Now let's put it all together. An **Inertial Measurement Unit (IMU)** combines accelerometers and gyroscopes. Here's a playground where you can compare different fusion methods side-by-side:
+
+<IMUFusionDemo client:load />
+
+Move the target angle and add disturbances to see how each method performs:
+
+- **Accelerometer only**: Tracks the true angle but responds to every vibration
+- **Gyroscope only**: Smooth but drifts away from truth over time
+- **Complementary filter**: Good balance with tunable response
+- **Kalman filter**: Optimal estimation with uncertainty quantification
+
+---
+
+## Summary
+
+Let's recap what we've learned:
+
+<div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+
+| Method | Pros | Cons | Best for |
+|--------|------|------|----------|
+| **Accelerometer** | No drift, measures absolute tilt | Noisy, vibration-sensitive | Static orientation |
+| **Gyroscope** | Smooth, fast response | Drifts over time | Short-term motion |
+| **Complementary** | Simple, effective, tunable | Fixed trust ratio | Real-time embedded |
+| **Kalman** | Optimal, adaptive, uncertainty | More complex | When accuracy matters |
+
+</div>
+
+---
+
+## Tuning Challenge
+
+**Can you tune a sensor fusion system?** Try to minimize the tracking error under different conditions:
+
+<FusionChallenge client:load />
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Tuning tips</div>
+<span className="text-zinc-400">For complementary filter: start with α=0.98, reduce if drifting, increase if too noisy. For Kalman: match Q and R to actual noise levels—observe how the system behaves and adjust.</span>
+</div>
+
+---
+
+## What We Learned
+
+**Accelerometer**: "Here's where gravity points right now"
+- Good for: Long-term orientation reference
+- Bad at: Handling vibration and movement
+
+**Gyroscope**: "Here's how fast you're rotating"
+- Good for: Smooth, fast tracking of rotation
+- Bad at: Long-term accuracy (drift)
+
+**Complementary Filter**: "Trust gyro for fast changes, accelerometer for the average"
+- Good for: Simple, effective fusion with minimal computation
+- Bad at: Adapting to changing conditions
+
+**Kalman Filter**: "Here's the optimal estimate given all the uncertainties"
+- Good for: Optimal estimation, uncertainty quantification
+- Bad at: Simplicity (more complex to implement and tune)
+
+The magic of sensor fusion is that **combining imperfect sensors gives better results than any single perfect sensor**. This principle extends far beyond IMUs—it's how GPS works with map data, how self-driving cars combine cameras with lidar, and how your phone knows where you are even when GPS is blocked.
+
+---
+
+## Going Further
+
+Sensor fusion is a vast field. Once you understand these fundamentals, there's much more to explore:
+
+- **Extended Kalman Filter (EKF)**: Handle nonlinear systems by linearizing around the current estimate
+- **Unscented Kalman Filter (UKF)**: Better nonlinear handling without computing Jacobians
+- **Particle Filters**: Handle arbitrary distributions, not just Gaussian
+- **Factor Graphs**: Elegant framework for multi-sensor SLAM and state estimation
+
+But the complementary filter and basic Kalman filter remain workhorses of practical engineering. They're simple, robust, and often good enough—which in engineering is the highest praise.
+
+---
+
+<p className="text-sm text-zinc-500 mt-8">This post was inspired by the interactive explanations at <a href="https://samwho.dev/" className="text-zinc-400 hover:text-zinc-300">samwho.dev</a> and <a href="https://ciechanow.ski/" className="text-zinc-400 hover:text-zinc-300">ciechanow.ski</a>.</p>
+
