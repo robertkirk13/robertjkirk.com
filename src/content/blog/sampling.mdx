@@ -1,0 +1,250 @@
+---
+title: "The Secret Life of Digital Signals"
+date: "2025-12-02"
+formattedDate: "December 2, 2025"
+coverImage: "../../assets/default-image.png"
+description: "An interactive exploration of sampling, aliasing, and the Nyquist theorem—the hidden rules that govern all digital audio, video, and sensor data."
+readingTime: 20
+tags: ["signals", "engineering", "interactive"]
+category: "Interactive"
+---
+
+import ContinuousSignalDemo from "../../components/sampling/ContinuousSignalDemo";
+import SamplingDemo from "../../components/sampling/SamplingDemo";
+import AliasingDemo from "../../components/sampling/AliasingDemo";
+import NyquistDiagram from "../../components/sampling/NyquistDiagram";
+import FrequencySpectrumDemo from "../../components/sampling/FrequencySpectrumDemo";
+import AntiAliasingDemo from "../../components/sampling/AntiAliasingDemo";
+import ReconstructionDemo from "../../components/sampling/ReconstructionDemo";
+import SamplingChallenge from "../../components/sampling/SamplingChallenge";
+import ComparisonPlayground from "../../components/sampling/ComparisonPlayground";
+
+Every digital device you use is lying to you—in a very precise way. Your phone's music isn't a continuous wave; it's a sequence of numbers. Your camera doesn't capture smooth motion; it grabs 24 snapshots per second. Yet somehow, we hear beautiful music and see fluid video. The magic lies in **sampling**—the art of turning continuous reality into discrete numbers, and back again.
+
+In this post, we'll build an intuition for how sampling works, discover the surprising rule that governs all digital media, and understand what happens when things go wrong.
+
+---
+
+## The Continuous World
+
+Before we can understand digital signals, we need to appreciate what we're trying to capture. The physical world is **continuous**—a sound wave has a value at every instant in time, not just at specific moments.
+
+Here's a simple sine wave, the most fundamental signal in nature:
+
+<ContinuousSignalDemo client:load />
+
+This wave has a value at *every* point in time. Try clicking the zoom button to see: no matter how close you look, you can always find more points. This is what **analog** means—a continuous, unbroken flow of values.
+
+But computers can't store infinite information. They need to work with discrete numbers. How do we capture this continuous signal with a finite amount of data?
+
+---
+
+## Sampling: Capturing Snapshots
+
+The answer is **sampling**—we measure the signal at regular intervals and store just those values. It's like taking photographs of a moving object instead of filming it continuously.
+
+<SamplingDemo client:load initialFrequency={2} initialSampleRate={20} />
+
+The <span className="text-blue-400 font-medium">blue dots</span> are our samples—the only information we actually store. The <span className="text-orange-400 font-medium">orange line</span> shows what we reconstruct from those samples.
+
+Play with the sample rate slider. When the sample rate is high, the reconstruction closely matches the original. But as you lower it, something strange starts to happen...
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">The fundamental tradeoff</div>
+<span className="text-zinc-400">Higher sample rates capture more detail but require more storage and processing. A CD stores 44,100 samples per second—that's over 10 million numbers per stereo minute!</span>
+</div>
+
+---
+
+## When Sampling Goes Wrong
+
+Here's where things get interesting. Try increasing the signal frequency while keeping the sample rate fixed:
+
+<SamplingDemo client:load initialFrequency={3} initialSampleRate={10} showReconstruction={true} />
+
+At some point, the reconstructed signal looks completely different from the original! The samples are the same, but they now represent a **lower frequency** wave. This phenomenon is called **aliasing**, and it's one of the most important concepts in digital signal processing.
+
+---
+
+## Aliasing: The Phantom Frequency
+
+Aliasing occurs when we don't sample fast enough. The high-frequency signal "masquerades" as a lower frequency one because we can't tell them apart from the samples alone.
+
+<AliasingDemo client:load />
+
+Watch what happens as you increase the true frequency above the <span className="text-yellow-400 font-medium">Nyquist limit</span> (half the sample rate). The top plot shows the actual signal being sampled. The bottom plot shows what we *perceive* from those samples—a completely different frequency!
+
+This is why wagon wheels sometimes appear to spin backwards in movies. The camera's frame rate isn't fast enough to capture the true rotation, so our brain interprets the aliased samples as reverse motion.
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Aliasing in the real world</div>
+<span className="text-zinc-400">Aliasing shows up everywhere: helicopter rotors that appear frozen on camera, moiré patterns on striped shirts in video, and ultrasonic sounds that become audible hums in poorly designed audio systems.</span>
+</div>
+
+---
+
+## The Nyquist-Shannon Theorem
+
+In 1928, Harry Nyquist figured out exactly when aliasing occurs, and Claude Shannon later proved it rigorously. Their discovery is one of the most important theorems in engineering:
+
+<div className="py-6 my-6 text-center text-xl overflow-x-auto">
+$$
+f_s > 2 \cdot f_{max}
+$$
+</div>
+
+In words: **the sample rate must be more than twice the highest frequency in the signal**. This critical boundary—half the sample rate—is called the **Nyquist frequency**.
+
+<NyquistDiagram client:load />
+
+Any frequency below Nyquist (the <span className="text-emerald-400 font-medium">green zone</span>) is preserved perfectly. Any frequency above Nyquist (the <span className="text-red-400 font-medium">red zone</span>) folds back into the safe zone as an alias, corrupting your signal.
+
+This explains real-world standards:
+- **CDs** sample at 44.1 kHz to capture audio up to ~20 kHz (the limit of human hearing)
+- **Professional audio** uses 48 kHz or 96 kHz for extra headroom
+- **Telephone** only needs 8 kHz because voice frequencies are limited
+
+---
+
+## Seeing Frequencies
+
+To truly understand aliasing, we need to look at signals differently. Instead of viewing amplitude over time, we can view **frequency content**—which frequencies make up our signal.
+
+<FrequencySpectrumDemo client:load />
+
+The top plot shows the signal in the **time domain** (what we see on an oscilloscope). The bottom plot shows the **frequency domain** (what we see on a spectrum analyzer).
+
+Try adding a second frequency component with the $f_2$ slider. You'll see two peaks in the spectrum. Now, what happens when a frequency exceeds Nyquist?
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">The Fourier insight</div>
+<span className="text-zinc-400">Any signal—music, speech, sensor data—can be decomposed into a sum of sine waves at different frequencies. This is the foundation of the Fourier transform, one of the most powerful tools in all of science and engineering.</span>
+</div>
+
+---
+
+## Anti-Aliasing Filters
+
+If aliasing is so destructive, how do we prevent it? The solution is elegant: **remove the problematic frequencies before sampling**. We use a low-pass filter that blocks everything above Nyquist.
+
+<AntiAliasingDemo client:load />
+
+The original signal contains three frequencies: 3 Hz, 7 Hz, and 14 Hz. With a sample rate of 20 Hz (Nyquist = 10 Hz), the 14 Hz component will alias.
+
+Click **Filter ON** to engage the anti-aliasing filter. Watch how it removes the high-frequency component *before* sampling. The result is cleaner—we've lost some information (the 14 Hz component), but at least what remains is accurate.
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Why every ADC has a filter</div>
+<span className="text-zinc-400">Every analog-to-digital converter (ADC) includes an anti-aliasing filter. Without it, high-frequency noise would fold down into your signal band, corrupting your measurements with phantom signals that don't really exist.</span>
+</div>
+
+---
+
+## Reconstruction: Back to Continuous
+
+Sampling captures discrete values. But to hear audio or display video, we need to convert back to continuous signals. How well can we reconstruct the original from our samples?
+
+<ReconstructionDemo client:load />
+
+Three common reconstruction methods:
+
+- **Zero-Order Hold (ZOH)**: Hold each sample value until the next one. Simple but creates "stair-steps."
+- **Linear Interpolation**: Draw straight lines between samples. Smoother but still not perfect.
+- **Sinc Interpolation**: The theoretically perfect method—if no aliasing occurred, this recovers the exact original signal!
+
+The sinc function is the magic ingredient. Its formula is surprisingly simple:
+
+<div className="py-6 my-6 text-center text-xl overflow-x-auto">
+$$
+\text{sinc}(x) = \frac{\sin(\pi x)}{\pi x}
+$$
+</div>
+
+When you sum sinc functions centered at each sample point, you get perfect reconstruction of any band-limited signal. This is the other half of the Nyquist-Shannon theorem—not only can we sample without loss, we can perfectly reconstruct!
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Perfect in theory</div>
+<span className="text-zinc-400">True sinc interpolation requires an infinite number of samples and is only perfect for exactly band-limited signals. Real DACs use approximations, but they're remarkably good—your ears can't tell the difference.</span>
+</div>
+
+---
+
+## Sampling Challenge
+
+Now it's your turn! Can you choose the right sample rate for different scenarios?
+
+<SamplingChallenge client:load />
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Tuning tips</div>
+<span className="text-zinc-400">Remember the Nyquist rule: fs &gt; 2 × f. For practical systems, engineers often use 2.2× to 4× oversampling to give the anti-aliasing filter an easier job.</span>
+</div>
+
+---
+
+## Comparison Playground
+
+Finally, see how different sample rates compare side-by-side. All four panels sample the same signal—watch how quality changes:
+
+<ComparisonPlayground client:load />
+
+Increase the signal frequency and watch the lower sample rates fall into aliasing one by one. This is why professional audio uses higher sample rates—not because humans can hear above 20 kHz, but because it makes filtering easier and reduces artifacts.
+
+---
+
+## The Sampling Theorem
+
+Let's recap the fundamental insights:
+
+<div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+
+| Concept | What it means | Why it matters |
+|---------|---------------|----------------|
+| **Sampling** | Capturing discrete snapshots of a continuous signal | Enables digital storage and processing |
+| **Nyquist Frequency** | Half the sample rate (fs/2) | The maximum frequency we can capture |
+| **Aliasing** | High frequencies masquerading as low frequencies | Corrupts data irreversibly if not prevented |
+| **Anti-aliasing Filter** | Removes frequencies above Nyquist before sampling | Prevents aliasing at the source |
+| **Reconstruction** | Converting samples back to continuous signal | Sinc interpolation is theoretically perfect |
+
+</div>
+
+---
+
+## What We Learned
+
+**Sampling**: "Take snapshots at regular intervals"
+- Good for: Converting analog to digital
+- Limited by: Storage space and processing power
+
+**Nyquist Theorem**: "Sample at more than twice the highest frequency"
+- Good for: Knowing exactly how fast to sample
+- Violated by: Aliasing artifacts that corrupt your data
+
+**Anti-Aliasing**: "Filter before sampling"
+- Good for: Preventing aliasing at the source
+- Trade-off: Removes some legitimate high-frequency content
+
+**Reconstruction**: "Rebuild continuous from discrete"
+- Good for: Playing back digital audio/video
+- Perfect method: Sinc interpolation (in theory)
+
+The beauty of sampling is that it's **reversible**—if you follow the rules, you lose nothing. This is why a CD can sound as good as the original master tape, and why digital photography replaced film. The discrete world can perfectly represent the continuous one, as long as we respect the Nyquist limit.
+
+---
+
+## Going Further
+
+Sampling theory is the foundation of all digital signal processing. Once you understand these fundamentals, there's a vast world to explore:
+
+- **Oversampling and noise shaping**: Trade sample rate for bit depth
+- **Sigma-delta ADCs**: Use 1-bit samples at very high rates
+- **Compressed sensing**: Sample below Nyquist using sparsity assumptions
+- **Multi-rate signal processing**: Efficiently change sample rates
+- **Digital filter design**: Shape frequency response precisely
+
+But the Nyquist theorem remains the cornerstone. Every time you stream music, make a video call, or use a digital sensor, you're relying on Harry Nyquist's insight from nearly a century ago.
+
+---
+
+<p className="text-sm text-zinc-500 mt-8">This post was inspired by the interactive explanations at <a href="https://samwho.dev/" className="text-zinc-400 hover:text-zinc-300">samwho.dev</a> and <a href="https://ciechanow.ski/" className="text-zinc-400 hover:text-zinc-300">ciechanow.ski</a>.</p>
+

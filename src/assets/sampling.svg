@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 686 460" width="686" height="460">
+  <defs>
+    <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#22c55e;stop-opacity:0.3"/>
+    </linearGradient>
+    <linearGradient id="aliasGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ef4444;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#f97316;stop-opacity:0.8"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="686" height="460" fill="#000000"/>
+  
+  <!-- Grid lines -->
+  <g stroke="#1e293b" stroke-width="1">
+    <line x1="80" y1="280" x2="620" y2="280"/>
+    <line x1="80" y1="200" x2="620" y2="200"/>
+    <line x1="80" y1="360" x2="620" y2="360"/>
+  </g>
+  
+  <!-- Original sine wave (green, faded) -->
+  <path d="M80,280 Q120,180 160,280 T240,280 T320,280 T400,280 T480,280 T560,280 T620,280" 
+        stroke="url(#waveGradient)" stroke-width="3" fill="none" opacity="0.4"/>
+  
+  <!-- High frequency wave that will alias (continuous) -->
+  <path d="M80,280 Q95,220 110,280 T140,280 T170,280 T200,280 T230,280 T260,280 T290,280 T320,280 T350,280 T380,280 T410,280 T440,280 T470,280 T500,280 T530,280 T560,280 T590,280 T620,280" 
+        stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  
+  <!-- Aliased wave (what we perceive from samples) -->
+  <path d="M80,280 Q170,200 260,280 T440,280 T620,280" 
+        stroke="url(#aliasGradient)" stroke-width="3" fill="none" stroke-dasharray="8,4"/>
+  
+  <!-- Sample points (blue dots with stems) -->
+  <g fill="#3b82f6" stroke="#3b82f6" stroke-width="2">
+    <!-- Sample stems -->
+    <line x1="110" y1="280" x2="110" y2="240"/>
+    <line x1="200" y1="280" x2="200" y2="320"/>
+    <line x1="290" y1="280" x2="290" y2="240"/>
+    <line x1="380" y1="280" x2="380" y2="320"/>
+    <line x1="470" y1="280" x2="470" y2="240"/>
+    <line x1="560" y1="280" x2="560" y2="320"/>
+    
+    <!-- Sample dots -->
+    <circle cx="110" cy="240" r="8"/>
+    <circle cx="200" cy="320" r="8"/>
+    <circle cx="290" cy="240" r="8"/>
+    <circle cx="380" cy="320" r="8"/>
+    <circle cx="470" cy="240" r="8"/>
+    <circle cx="560" cy="320" r="8"/>
+  </g>
+  
+  <!-- Title text -->
+  <text x="60" y="65" font-family="Arial, sans-serif" font-size="28" fill="#94a3b8">An</text>
+  <text x="60" y="110" font-family="Georgia, serif" font-size="42" font-style="italic" fill="#f97316">Interactive</text>
+  <text x="60" y="150" font-family="Arial, sans-serif" font-size="28" fill="#94a3b8">guide to</text>
+  
+  <!-- Main title: Sampling -->
+  <text x="60" y="420" font-family="Georgia, serif" font-size="56" font-style="italic">
+    <tspan fill="#22c55e">S</tspan>
+    <tspan fill="#3b82f6">A</tspan>
+    <tspan fill="#f97316">M</tspan>
+    <tspan fill="#a855f7">P</tspan>
+    <tspan fill="#eab308">L</tspan>
+    <tspan fill="#22c55e">I</tspan>
+    <tspan fill="#3b82f6">N</tspan>
+    <tspan fill="#f97316">G</tspan>
+  </text>
+  
+  <!-- Nyquist indicator -->
+  <line x1="350" y1="180" x2="350" y2="380" stroke="#eab308" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="350" y="172" font-family="monospace" font-size="12" fill="#eab308" text-anchor="middle">NYQUIST</text>
+  
+  <!-- Small label for aliasing zone -->
+  <rect x="420" y="185" width="80" height="24" rx="4" fill="rgba(239,68,68,0.2)" stroke="rgba(239,68,68,0.4)"/>
+  <text x="460" y="202" font-family="monospace" font-size="11" fill="#ef4444" text-anchor="middle">ALIASING</text>
+  
+  <!-- fs label -->
+  <text x="590" y="395" font-family="monospace" font-size="14" fill="#3b82f6">fs = 6 Hz</text>
+</svg>
