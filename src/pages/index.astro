@@ -158,7 +158,7 @@ const currentYear = new Date().getFullYear();
                       Latest Post
                     </span>
                   </div>
-                  <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" transition:name={`title-${latestPost.slug}`}>
                     {latestPost.data.title}
                   </h2>
                   <p class="text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
@@ -178,7 +178,7 @@ const currentYear = new Date().getFullYear();
                   href={`/writing/${post.slug}`}
                   class="block group bg-gray-50 dark:bg-neutral-900 rounded-2xl p-5 border border-gray-200 dark:border-neutral-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all"
                 >
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2">
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2" transition:name={`title-${post.slug}`}>
                     {post.data.title}
                   </h4>
                   <div class="flex items-center gap-2 text-sm text-gray-500">

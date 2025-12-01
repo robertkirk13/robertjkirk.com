@@ -575,22 +575,22 @@ export default function TuningChallenge() {
 					</div>
 
 					{/* Results table */}
-					<div className="bg-zinc-900/50 rounded-xl p-3">
-						<div className="text-xs text-zinc-500 uppercase tracking-wide mb-2">Your Runs</div>
+					<div className="bg-zinc-900/50 rounded-xl p-2">
+						<div className="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">Your Runs</div>
 						{results.length === 0 ? (
-							<div className="text-zinc-600 text-sm text-center py-4">
+							<div className="text-zinc-600 text-xs text-center py-3">
 								Tune the gains and hit GO!
 							</div>
 						) : (
-							<div className="max-h-[140px] overflow-y-auto">
-								<table className="w-full text-xs font-mono">
+							<div className="max-h-[120px] overflow-y-auto overflow-x-auto">
+								<table className="w-full text-[11px] font-mono">
 									<thead className="sticky top-0 bg-zinc-900">
 										<tr className="text-zinc-500">
-											<th className="text-left py-1 pr-2">Test</th>
-											<th className="text-right py-1 px-1">Kp</th>
-											<th className="text-right py-1 px-1">Kd</th>
-											<th className="text-right py-1 px-1">Ki</th>
-											<th className="text-right py-1 pl-2">Time</th>
+											<th className="text-left py-0.5 pr-1">Test</th>
+											<th className="text-right py-0.5 px-0.5">P</th>
+											<th className="text-right py-0.5 px-0.5">D</th>
+											<th className="text-right py-0.5 px-0.5">I</th>
+											<th className="text-right py-0.5 pl-1">Time</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -599,12 +599,12 @@ export default function TuningChallenge() {
 												key={i}
 												className={i === 0 ? "text-zinc-200" : "text-zinc-500"}
 											>
-												<td className="py-1 pr-2 text-zinc-400">{r.challenge}</td>
-												<td className="py-1 px-1 text-right text-blue-400">{r.kp.toFixed(1)}</td>
-												<td className="py-1 px-1 text-right text-purple-400">{r.kd.toFixed(1)}</td>
-												<td className="py-1 px-1 text-right text-green-400">{r.ki.toFixed(1)}</td>
+												<td className="py-0.5 pr-1 text-zinc-400">{r.challenge.slice(0, 4)}</td>
+												<td className="py-0.5 px-0.5 text-right text-blue-400">{r.kp.toFixed(1)}</td>
+												<td className="py-0.5 px-0.5 text-right text-purple-400">{r.kd.toFixed(1)}</td>
+												<td className="py-0.5 px-0.5 text-right text-green-400">{r.ki.toFixed(1)}</td>
 												<td
-													className={`py-1 pl-2 text-right ${
+													className={`py-0.5 pl-1 text-right ${
 														r.time === null
 															? "text-red-400"
 															: r.time <= CHALLENGES.find(c => c.name === r.challenge)!.parTime
@@ -612,7 +612,7 @@ export default function TuningChallenge() {
 																: "text-amber-400"
 													}`}
 												>
-													{r.time === null ? "Fail" : `${r.time.toFixed(2)}s`}
+													{r.time === null ? "Fail" : `${r.time.toFixed(1)}s`}
 												</td>
 											</tr>
 										))}

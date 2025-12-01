@@ -300,21 +300,21 @@ export default function ComparisonPlayground() {
 			</div>
 
 			{/* Error stats */}
-			<div className="flex justify-center gap-4">
+			<div className="flex justify-center gap-2 flex-wrap">
 				{errors.map((e) => (
 					<div
 						key={e.name}
-						className="px-3 py-2 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]"
+						className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[55px]"
 					>
-						<span className="text-[10px] text-zinc-500">{e.name} Error</span>
+						<span className="text-[10px] text-zinc-500">{e.name}</span>
 						<span
-							className="font-mono text-sm"
+							className="font-mono text-xs"
 							style={{
 								color: e.color,
 								fontVariantNumeric: "tabular-nums",
 							}}
 						>
-							{e.error.toFixed(1)}°
+							{Math.min(e.error, 99.9).toFixed(1)}°
 						</span>
 					</div>
 				))}

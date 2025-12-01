@@ -75,6 +75,7 @@ const sortedPosts = posts.sort(
               ]}
               href={`/writing/${post.slug}`}
               featuredText={index === 0 ? "New" : ""}
+              slug={post.slug}
             />
           ))
         }

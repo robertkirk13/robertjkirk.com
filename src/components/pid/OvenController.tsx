@@ -587,8 +587,8 @@ export default function OvenController() {
 						</svg>
 					</button>
 				</div>
-				<div className="flex gap-3 font-mono text-xs">
-					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center w-[70px]">
+				<div className="flex gap-2 font-mono text-xs flex-wrap justify-center">
+					<div className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[55px]">
 						<span className="text-zinc-500 text-[10px]">Error</span>
 						<span
 							className="text-red-400"
@@ -597,10 +597,10 @@ export default function OvenController() {
 							<span className="inline-block w-[0.6em] text-right">
 								{error < 0 ? "−" : ""}
 							</span>
-							{Math.abs(error).toFixed(0)}°
+							{Math.min(Math.abs(error), 999).toFixed(0)}°
 						</span>
 					</div>
-					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center w-[70px]">
+					<div className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[55px]">
 						<span className="text-zinc-500 text-[10px]">P</span>
 						<span
 							className="text-blue-400"
@@ -609,10 +609,10 @@ export default function OvenController() {
 							<span className="inline-block w-[0.6em] text-right">
 								{pOutput < 0 ? "−" : ""}
 							</span>
-							{Math.abs(pOutput).toFixed(0)}
+							{Math.min(Math.abs(pOutput), 999).toFixed(0)}
 						</span>
 					</div>
-					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center w-[70px]">
+					<div className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[55px]">
 						<span className="text-zinc-500 text-[10px]">I</span>
 						<span
 							className="text-green-400"
@@ -621,10 +621,10 @@ export default function OvenController() {
 							<span className="inline-block w-[0.6em] text-right">
 								{iOutput < 0 ? "−" : ""}
 							</span>
-							{Math.abs(iOutput).toFixed(0)}
+							{Math.min(Math.abs(iOutput), 999).toFixed(0)}
 						</span>
 					</div>
-					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center w-[70px]">
+					<div className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[55px]">
 						<span className="text-zinc-500 text-[10px]">Heat</span>
 						<span
 							className={

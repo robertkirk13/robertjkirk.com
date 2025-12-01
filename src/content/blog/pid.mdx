@@ -62,7 +62,7 @@ If we tolerate some error, bang-bang with a deadzone works fine—it's how simpl
 
 The first insight is simple: **the further you are from the target, the harder you should push**. If you're 90° away, apply a lot of power. If you're only 2° away, apply just a little. This is called **proportional control** because the output is proportional to the error.
 
-<div className="py-6 my-6 text-center text-xl">
+<div className="py-6 my-6 text-center text-xl overflow-x-auto">
 $$
 \textcolor{#e879f9}{Output} \;\;=\;\; \textcolor{#60a5fa}{K_p} \cdot \textcolor{#f87171}{error}
 $$
@@ -98,7 +98,7 @@ The proportional term looks at where you are. But what if we could also look at 
 
 This is what the **derivative term** does: it responds to the *rate of change* of the error. This is the "D" in PID.
 
-<div className="py-6 my-6 text-center text-xl">
+<div className="py-6 my-6 text-center text-xl overflow-x-auto">
 $$
 \textcolor{#e879f9}{Output} \;\;=\;\; \textcolor{#60a5fa}{K_p} \cdot \textcolor{#f87171}{error} \;\;+\;\; \textcolor{#c084fc}{K_d} \cdot \textcolor{#f87171}{\frac{d(error)}{dt}}
 $$
@@ -133,7 +133,7 @@ Neither P nor D can fix this problem. We need something that remembers the past 
 
 Here's the key insight: if the error persists, we should keep adding force. Even a small error, given enough time, should result in a large correction. This is what the **integral term** does: it sums up all the past errors.
 
-<div className="py-6 my-6 text-center text-xl">
+<div className="py-6 my-6 text-center text-xl overflow-x-auto">
 $$
 \textcolor{#e879f9}{Output} \;\;=\;\; \textcolor{#60a5fa}{K_p} \cdot \textcolor{#f87171}{error} \;\;+\;\; \textcolor{#c084fc}{K_d} \cdot \textcolor{#f87171}{\frac{d(error)}{dt}} \;\;+\;\; \textcolor{#4ade80}{K_i} \cdot \textcolor{#f87171}{\int error \, dt}
 $$
@@ -219,11 +219,15 @@ This cascaded structure - an inner loop for fast dynamics (angle) and an outer l
 
 Now you've seen all three terms in action:
 
+<div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+
 | Term | Looks at | Effect | Fixes | Can cause |
 |------|----------|--------|-------|-----------|
 | **P** | Present error | Push toward target | Slow response | Overshoot, oscillation |
 | **D** | Future error (rate) | Brake before arrival | Overshoot, oscillation | Noise sensitivity |
 | **I** | Past error (sum) | Eliminate steady-state error | Steady-state error | Windup, slow response |
+
+</div>
 
 ---
 

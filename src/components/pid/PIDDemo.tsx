@@ -1050,79 +1050,69 @@ export default function PIDDemo({
 						</>
 					)}
 				</div>
-				<div className="flex gap-3 font-mono text-xs flex-nowrap">
-					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]">
-						<span className="text-zinc-500 text-[10px] whitespace-nowrap">
-							Error
-						</span>
+				<div className="flex gap-2 font-mono text-xs flex-wrap justify-center">
+					<div className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[60px]">
+						<span className="text-zinc-500 text-[10px]">Error</span>
 						<span
-							className="text-red-400 whitespace-nowrap"
+							className="text-red-400"
 							style={{ fontVariantNumeric: "tabular-nums" }}
 						>
 							<span className="inline-block w-[0.6em] text-right">
 								{(error * 180) / Math.PI < 0 ? "−" : ""}
 							</span>
-							{Math.abs((error * 180) / Math.PI).toFixed(1)}°
+							{Math.min(Math.abs((error * 180) / Math.PI), 99.9).toFixed(1)}°
 						</span>
 					</div>
-					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]">
-						<span className="text-zinc-500 text-[10px] whitespace-nowrap">
-							P
-						</span>
+					<div className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[60px]">
+						<span className="text-zinc-500 text-[10px]">P</span>
 						<span
-							className="text-blue-400 whitespace-nowrap"
+							className="text-blue-400"
 							style={{ fontVariantNumeric: "tabular-nums" }}
 						>
 							<span className="inline-block w-[0.6em] text-right">
 								{pOutput < 0 ? "−" : ""}
 							</span>
-							{Math.abs(pOutput).toFixed(2)}
+							{Math.min(Math.abs(pOutput), 9.99).toFixed(2)}
 						</span>
 					</div>
 					{enableD && (
-						<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]">
-							<span className="text-zinc-500 text-[10px] whitespace-nowrap">
-								D
-							</span>
+						<div className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[60px]">
+							<span className="text-zinc-500 text-[10px]">D</span>
 							<span
-								className="text-purple-400 whitespace-nowrap"
+								className="text-purple-400"
 								style={{ fontVariantNumeric: "tabular-nums" }}
 							>
 								<span className="inline-block w-[0.6em] text-right">
 									{dOutput < 0 ? "−" : ""}
 								</span>
-								{Math.abs(dOutput).toFixed(2)}
+								{Math.min(Math.abs(dOutput), 9.99).toFixed(2)}
 							</span>
 						</div>
 					)}
 					{enableI && (
-						<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]">
-							<span className="text-zinc-500 text-[10px] whitespace-nowrap">
-								I
-							</span>
+						<div className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[60px]">
+							<span className="text-zinc-500 text-[10px]">I</span>
 							<span
-								className="text-green-400 whitespace-nowrap"
+								className="text-green-400"
 								style={{ fontVariantNumeric: "tabular-nums" }}
 							>
 								<span className="inline-block w-[0.6em] text-right">
 									{iOutput < 0 ? "−" : ""}
 								</span>
-								{Math.abs(iOutput).toFixed(2)}
+								{Math.min(Math.abs(iOutput), 9.99).toFixed(2)}
 							</span>
 						</div>
 					)}
-					<div className="px-3 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[70px]">
-						<span className="text-zinc-500 text-[10px] whitespace-nowrap">
-							Output
-						</span>
+					<div className="px-2 py-1.5 bg-zinc-900 rounded-xl flex flex-col items-center min-w-[60px]">
+						<span className="text-zinc-500 text-[10px]">Out</span>
 						<span
-							className="text-pink-400 whitespace-nowrap"
+							className="text-pink-400"
 							style={{ fontVariantNumeric: "tabular-nums" }}
 						>
 							<span className="inline-block w-[0.6em] text-right">
 								{pOutput + dOutput + iOutput < 0 ? "−" : ""}
 							</span>
-							{Math.abs(pOutput + dOutput + iOutput).toFixed(2)}
+							{Math.min(Math.abs(pOutput + dOutput + iOutput), 9.99).toFixed(2)}
 						</span>
 					</div>
 				</div>

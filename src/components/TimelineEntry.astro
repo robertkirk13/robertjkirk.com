@@ -5,9 +5,11 @@ interface Props {
   featuredText?: string;
   description?: string;
   href?: string;
+  slug?: string;
 }
 
-const { title, tags, featuredText, description, href } = Astro.props;
+const { title, tags, featuredText, description, href, slug } = Astro.props;
+const transitionName = slug ? `title-${slug}` : undefined;
 ---
 
 {
@@ -18,7 +20,7 @@ const { title, tags, featuredText, description, href } = Astro.props;
           <span class="text-sm font-medium text-blue-600">{featuredText}</span>
           <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse-small" />
         </div>
-        <h3 class="font-medium text-lg my-1 dark:text-neutral-200">{title}</h3>
+        <h3 class="font-medium text-lg my-1 dark:text-neutral-200" transition:name={transitionName}>{title}</h3>
         <p class="text-gray-600 my-2 dark:text-neutral-500">{description}</p>
         {tags && tags.length > 0 && (
           <div class="flex items-center gap-2 mt-4">
@@ -41,7 +43,7 @@ const { title, tags, featuredText, description, href } = Astro.props;
       <a href={href} class=" ">
         <div class="flex flex-col gap-1">
           <div class="flex flex-col">
-            <h3 class="font-medium  transition-colors dark:text-neutral-200">
+            <h3 class="font-medium  transition-colors dark:text-neutral-200" transition:name={transitionName}>
               {title}
             </h3>
             {description && (
