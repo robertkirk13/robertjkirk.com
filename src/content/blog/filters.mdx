@@ -1,0 +1,290 @@
+---
+title: "The Art of Digital Filters"
+date: "2025-12-03"
+formattedDate: "December 3, 2025"
+coverImage: "../../assets/default-image.png"
+description: "An interactive journey through FIR, IIR filters, and the beautiful math that makes them work—from moving averages to pole-zero analysis."
+readingTime: 22
+tags: ["dsp", "engineering", "interactive"]
+category: "Interactive"
+---
+
+import SignalPlayground from "../../components/filters/SignalPlayground";
+import MovingAverageDemo from "../../components/filters/MovingAverageDemo";
+import ConvolutionDemo from "../../components/filters/ConvolutionDemo";
+import FrequencyResponseDemo from "../../components/filters/FrequencyResponseDemo";
+import FIRFilterDemo from "../../components/filters/FIRFilterDemo";
+import IIRFilterDemo from "../../components/filters/IIRFilterDemo";
+import PoleZeroDemo from "../../components/filters/PoleZeroDemo";
+import FilterComparison from "../../components/filters/FilterComparison";
+import FilterDesignChallenge from "../../components/filters/FilterDesignChallenge";
+
+Every signal you've ever heard, seen, or measured has been filtered. The audio in your headphones passes through dozens of filters. Your phone's accelerometer data is filtered before it ever reaches an app. Even your brain filters the raw signals from your eyes and ears. Filtering is everywhere because the real world is messy—and we need to extract the signal from the noise.
+
+In this post, we'll build an intuition for how digital filters work. We'll start with the simplest idea imaginable—averaging—and progressively uncover why the math actually works. By the end, you'll understand not just *what* filters do, but *why* they do it.
+
+---
+
+## The Problem: Noise
+
+Imagine you're reading data from a sensor. In a perfect world, you'd get clean measurements:
+
+<SignalPlayground client:load showNoise={false} />
+
+But reality is never this clean. Real sensors have noise—random fluctuations from thermal effects, electromagnetic interference, quantization error, and countless other sources:
+
+<SignalPlayground client:load initialNoiseLevel={0.4} />
+
+The <span className="text-emerald-400 font-medium">green line</span> is the "true" signal we want. The <span className="text-blue-400 font-medium">blue line</span> is what we actually measure. Our job is to recover the green from the blue.
+
+This is the fundamental problem of signal processing: **how do we separate what we care about from what we don't?**
+
+---
+
+## The Simplest Filter: Moving Average
+
+Here's an intuition that probably feels obvious: if the noise is random, maybe we can average it away. Take a few consecutive samples, compute their average, and the random fluctuations should cancel out—leaving mostly the true signal.
+
+This is called a **moving average filter**, and it's surprisingly powerful:
+
+<MovingAverageDemo client:load />
+
+The <span className="text-orange-400 font-medium">orange window</span> shows which samples are being averaged at each moment. Try increasing the window size:
+
+- **Small window** (3-5): Mild smoothing, fast response
+- **Medium window** (10-15): Good noise rejection, some delay
+- **Large window** (20+): Heavy smoothing, significant delay
+
+Notice the tradeoff? The more you average, the smoother the result—but the more **delayed** and **sluggish** it becomes. The filtered signal lags behind the original because you're always looking at past samples.
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">The fundamental tradeoff</div>
+<span className="text-zinc-400">Every filter trades off between noise rejection and responsiveness. There's no free lunch—reducing noise always costs you something in time or frequency response.</span>
+</div>
+
+---
+
+## Convolution: The Mathematical Heart
+
+That moving average we just built? It's actually an example of something much more general: **convolution**. Convolution is the mathematical operation at the heart of all linear filters.
+
+Here's the idea: instead of just averaging (where each sample contributes equally), what if different samples had different weights? We slide a "kernel" of weights across the signal, multiplying and summing at each position:
+
+<ConvolutionDemo client:load />
+
+The kernel (also called the "impulse response") defines what the filter does:
+
+- **Box kernel**: All weights equal = moving average (smoothing)
+- **Gaussian kernel**: Weights taper off smoothly (better smoothing, less ringing)
+- **Edge kernel**: Detects changes (derivatives!)
+
+The convolution formula looks like this:
+
+<div className="py-6 my-6 text-center text-xl overflow-x-auto">
+$$
+y[n] = \sum_{k=0}^{M} h[k] \cdot x[n-k]
+$$
+</div>
+
+Where $h[k]$ are the kernel weights (filter coefficients) and $x[n-k]$ are past input samples. This is saying: "the output at time $n$ is a weighted combination of the current and past inputs."
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Why "convolution"?</div>
+<span className="text-zinc-400">The name comes from the Latin "convolvere" meaning "to roll together." We're rolling the kernel across the signal, folding them together at each point.</span>
+</div>
+
+---
+
+## Thinking in Frequencies
+
+So far we've thought about signals in the **time domain**—how they change moment to moment. But there's another way to look at signals that reveals something profound: the **frequency domain**.
+
+Any signal can be decomposed into a sum of sine waves at different frequencies. Low-frequency components change slowly; high-frequency components change rapidly. Noise tends to be high-frequency (rapid random fluctuations), while the signals we care about are often lower frequency.
+
+<FrequencyResponseDemo client:load />
+
+The top plot shows what happens in time; the bottom shows the filter's **frequency response**—how much it lets through at each frequency.
+
+A low-pass filter (like our moving average) passes low frequencies and attenuates high ones. This is why it smooths the signal: it's literally removing the high-frequency noise components!
+
+The <span className="text-orange-400 font-medium">cutoff frequency</span> is where the filter transitions from passing to blocking. Move the slider and watch both the frequency response curve and the filtered signal change together.
+
+---
+
+## FIR Filters: Finite Impulse Response
+
+The moving average and weighted kernels we've seen are all examples of **FIR filters** (Finite Impulse Response). The "finite" means the filter has a finite memory—it only looks at a fixed number of past samples.
+
+FIR filters are defined entirely by their coefficients (the kernel weights). The number of coefficients is called the "order" or "taps" of the filter.
+
+<FIRFilterDemo client:load />
+
+Try adjusting the parameters:
+
+- **More taps**: Sharper cutoff, but more delay and computation
+- **Different windows**: Trade off between sharp cutoff and "ripples" in the passband/stopband
+
+The coefficients shown are computed using the **windowed sinc** method. The sinc function ($\sin(x)/x$) is the "ideal" low-pass filter in theory, but it requires infinite samples. We truncate it with a window function (Hamming, Blackman, etc.) to make it practical.
+
+<div className="py-6 my-6 text-center text-xl overflow-x-auto">
+$$
+h[n] = w[n] \cdot \frac{\sin(2\pi f_c (n - M/2))}{\pi (n - M/2)}
+$$
+</div>
+
+Where $w[n]$ is the window function and $f_c$ is the cutoff frequency.
+
+---
+
+## IIR Filters: The Power of Feedback
+
+FIR filters only use past *inputs*. But what if we also used past *outputs*? This creates **feedback**, and the result is an IIR filter (Infinite Impulse Response).
+
+The "infinite" is key: a single impulse creates an output that theoretically rings forever (though it decays). This makes IIR filters incredibly efficient—you can get the same frequency response with far fewer computations.
+
+<IIRFilterDemo client:load />
+
+The simplest IIR filter is the **exponential moving average**:
+
+<div className="py-6 my-6 text-center text-xl overflow-x-auto">
+$$
+y[n] = \alpha \cdot x[n] + (1-\alpha) \cdot y[n-1]
+$$
+</div>
+
+The $\alpha$ parameter (0 to 1) controls the smoothing:
+- **High α** (→1): Fast response, less smoothing
+- **Low α** (→0): Slow response, heavy smoothing
+
+Notice how this achieves smoothing with just **one multiplication and one addition per sample**! An FIR filter with similar smoothing might need 10-20 operations per sample.
+
+The feedback loop (the $y[n-1]$ term) is what makes IIR filters so powerful—and dangerous. Because they use their own output, they can become **unstable** if designed incorrectly.
+
+---
+
+## Poles and Zeros: Why Stability Matters
+
+To truly understand IIR filters, we need to venture into the **z-transform** domain. Don't worry—we won't do much math. The key insight is visual.
+
+Every filter can be characterized by its **poles** and **zeros** plotted on the complex plane. The unit circle represents all possible frequencies:
+
+<PoleZeroDemo client:load />
+
+The rules are simple:
+- **Poles** (×) create resonance—the filter amplifies frequencies near them
+- **Zeros** (○) create nulls—the filter blocks frequencies near them
+- **Stability**: All poles must be inside the unit circle!
+
+Try moving the pole radius above 1.0 and watch what happens. The filter becomes unstable—its output grows without bound. This is why IIR filter design requires care: you must ensure the poles stay inside the unit circle.
+
+The pole angle determines which frequency is amplified. The pole radius determines how sharp the resonance is (closer to 1 = sharper peak).
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Poles inside, zeros anywhere</div>
+<span className="text-zinc-400">FIR filters have all poles at the origin (trivially stable) and can place zeros anywhere. IIR filters have poles away from the origin, giving them their efficiency but requiring stability analysis.</span>
+</div>
+
+---
+
+## FIR vs IIR: The Comparison
+
+Now let's put FIR and IIR head-to-head on the same filtering task:
+
+<FilterComparison client:load />
+
+Key differences:
+
+| Aspect | FIR | IIR |
+|--------|-----|-----|
+| **Stability** | Always stable | Can be unstable |
+| **Phase** | Can be linear (no distortion) | Always nonlinear |
+| **Efficiency** | More taps needed | Few coefficients |
+| **Impulse Response** | Finite duration | Infinite (decaying) |
+| **Step Response** | Sharp settling | May ring/overshoot |
+
+**When to use FIR:**
+- Linear phase is critical (audio, communications)
+- Arbitrary frequency responses needed
+- Stability must be guaranteed
+
+**When to use IIR:**
+- Computational efficiency is critical
+- Emulating analog filters
+- Simple smoothing/noise rejection
+
+---
+
+## Filter Design Challenge
+
+Now it's your turn! Can you design filters to solve real-world problems?
+
+<FilterDesignChallenge client:load />
+
+<div className="my-4 px-3 py-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg text-sm">
+<div className="text-zinc-300 font-medium mb-1">Tips for success</div>
+<span className="text-zinc-400">The green zones show frequencies you want to keep; red zones show frequencies to reject. Adjust the cutoff to separate them, and increase taps if you need a sharper transition.</span>
+</div>
+
+---
+
+## The Filter Toolbox
+
+Let's summarize the intuitions we've built:
+
+<div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+
+| Concept | Intuition | When to Use |
+|---------|-----------|-------------|
+| **Moving Average** | Average recent samples | Quick smoothing, sensor data |
+| **Convolution** | Slide & weight | Foundation of all FIR filters |
+| **Frequency Response** | What frequencies pass through | Understanding filter behavior |
+| **FIR Filter** | Weighted sum of inputs | Linear phase, guaranteed stability |
+| **IIR Filter** | Feedback loop | Efficiency, analog emulation |
+| **Pole-Zero** | Geometry of filter response | Design and stability analysis |
+
+</div>
+
+---
+
+## What We Learned
+
+**Moving Average**: "Average recent samples to smooth noise"
+- Good for: Quick noise reduction
+- Limited by: Can't do sharp cutoffs
+
+**Convolution**: "Weighted combination of past samples"  
+- Good for: Flexible filter design
+- Math behind: All linear filtering
+
+**FIR Filters**: "Only uses past inputs"
+- Good for: Stability, linear phase
+- Trade-off: More computation for sharp filters
+
+**IIR Filters**: "Uses past outputs too"
+- Good for: Efficiency, simple implementation  
+- Trade-off: Can be unstable, nonlinear phase
+
+**Pole-Zero Analysis**: "Geometry reveals behavior"
+- Good for: Understanding and designing filters
+- Key rule: Poles inside unit circle = stable
+
+The magic of digital filters is that a few simple mathematical operations—multiply and add—can precisely sculpt the frequency content of any signal. From removing power line hum to extracting heartbeats from noisy ECG data, the same fundamental principles apply.
+
+---
+
+## Going Further
+
+Filter design is a deep field with many more topics to explore:
+
+- **Butterworth, Chebyshev, Elliptic**: Classic IIR filter families with different tradeoffs
+- **Parks-McClellan algorithm**: Optimal FIR filter design
+- **Multirate processing**: Changing sample rates efficiently
+- **Adaptive filters**: Filters that learn and adjust automatically
+- **Kalman filtering**: Optimal estimation from noisy measurements (covered in [sensor fusion](/writing/sensor-fusion))
+
+But the fundamentals we've covered—convolution, frequency response, FIR vs IIR, stability—these are the building blocks for all digital signal processing. Master these, and the rest becomes variations on a theme.
+
+---
+
+<p className="text-sm text-zinc-500 mt-8">This post was inspired by the interactive explanations at <a href="https://samwho.dev/" className="text-zinc-400 hover:text-zinc-300">samwho.dev</a> and <a href="https://ciechanow.ski/" className="text-zinc-400 hover:text-zinc-300">ciechanow.ski</a>.</p>
+
