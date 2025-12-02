@@ -397,6 +397,19 @@ export default function MotorDemo({ showPlot = true, showControls = true }: Moto
     return clampAngle(angle);
   };
 
+  const getAngleFromTouch = (e: React.TouchEvent<HTMLCanvasElement> | TouchEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas || !e.touches[0]) return null;
+    
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = CANVAS_WIDTH / rect.width;
+    const scaleY = CANVAS_HEIGHT / rect.height;
+    const x = (e.touches[0].clientX - rect.left) * scaleX - CANVAS_WIDTH / 2;
+    const y = (e.touches[0].clientY - rect.top) * scaleY - (CANVAS_HEIGHT - 35);
+    let angle = -Math.atan2(y, x);
+    return clampAngle(angle);
+  };
+
   const isNearTarget = (e: React.MouseEvent<HTMLCanvasElement> | MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return false;
@@ -417,6 +430,24 @@ export default function MotorDemo({ showPlot = true, showControls = true }: Moto
     const avgScale = (scaleX + scaleY) / 2;
     const dist = Math.sqrt((x - targetX) ** 2 + (y - targetY) ** 2);
     return dist < 20 * avgScale;
+  };
+
+  const isNearTargetTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas || !e.touches[0]) return false;
+    
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = CANVAS_WIDTH / rect.width;
+    const scaleY = CANVAS_HEIGHT / rect.height;
+    const x = (e.touches[0].clientX - rect.left) * scaleX - CANVAS_WIDTH / 2;
+    const y = (e.touches[0].clientY - rect.top) * scaleY - (CANVAS_HEIGHT - 35);
+    
+    const radius = Math.min(CANVAS_WIDTH, CANVAS_HEIGHT * 1.5) * 0.4;
+    const targetX = Math.cos(-targetAngle) * (radius + 25);
+    const targetY = Math.sin(-targetAngle) * (radius + 25);
+    
+    const dist = Math.sqrt((x - targetX) ** 2 + (y - targetY) ** 2);
+    return dist < 40; // Larger hit area for touch
   };
 
   useEffect(() => {
@@ -495,6 +526,29 @@ export default function MotorDemo({ showPlot = true, showControls = true }: Moto
     setIsHoveringTarget(false);
   };
 
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (isNearTargetTouch(e)) {
+      e.preventDefault();
+      setIsDragging(true);
+      setIsHoveringTarget(true);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (isDragging) {
+      e.preventDefault();
+      const angle = getAngleFromTouch(e);
+      if (angle !== null) {
+        setTargetAngle(angle);
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    setIsHoveringTarget(false);
+  };
+
   const handleReset = () => {
     const initialState = { angle: Math.PI / 2, angularVelocity: 0 };
     stateRef.current = initialState;
@@ -518,8 +572,11 @@ export default function MotorDemo({ showPlot = true, showControls = true }: Moto
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseLeave}
-            className={`outline-none border-0 block w-full max-w-[440px] ${isHoveringTarget || isDragging ? 'cursor-grab' : 'cursor-default'} ${isDragging ? 'cursor-grabbing' : ''}`}
-            style={{ touchAction: 'none', aspectRatio: '440 / 280' }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className={`outline-none border-0 block w-full max-w-[440px] touch-none ${isHoveringTarget || isDragging ? 'cursor-grab' : 'cursor-default'} ${isDragging ? 'cursor-grabbing' : ''}`}
+            style={{ aspectRatio: '440 / 280' }}
           />
         </div>
         

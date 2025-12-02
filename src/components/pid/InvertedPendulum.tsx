@@ -414,6 +414,18 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 		};
 	}, []);
 
+	const getTouchPos = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+		const canvas = canvasRef.current;
+		if (!canvas || !e.touches[0]) return { x: 0, y: 0 };
+		const rect = canvas.getBoundingClientRect();
+		const scaleX = CANVAS_WIDTH / rect.width;
+		const scaleY = CANVAS_HEIGHT / rect.height;
+		return {
+			x: (e.touches[0].clientX - rect.left) * scaleX,
+			y: (e.touches[0].clientY - rect.top) * scaleY,
+		};
+	}, []);
+
 	const isNearCart = useCallback((mouseX: number, mouseY: number) => {
 		const centerX = CANVAS_WIDTH / 2;
 		const groundY = CANVAS_HEIGHT * 0.75;
@@ -428,7 +440,7 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 		);
 	}, []);
 
-	const isNearTarget = useCallback((mouseX: number, mouseY: number) => {
+	const isNearTarget = useCallback((mouseX: number, mouseY: number, touchMode = false) => {
 		if (!showPositionControl) return false;
 		const centerX = CANVAS_WIDTH / 2;
 		const groundY = CANVAS_HEIGHT * 0.75;
@@ -436,7 +448,8 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 		const targetScreenX = centerX + targetX * SCALE;
 		const dx = mouseX - targetScreenX;
 		const dy = mouseY - handleY;
-		return Math.sqrt(dx * dx + dy * dy) < 15;
+		const hitRadius = touchMode ? 30 : 15; // Larger hit area for touch
+		return Math.sqrt(dx * dx + dy * dy) < hitRadius;
 	}, [targetX, showPositionControl]);
 
 	const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -485,6 +498,40 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 		}
 	};
 
+	const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+		const { x, y } = getTouchPos(e);
+		if (isNearTarget(x, y, true) && !hasFallen) {
+			e.preventDefault();
+			setIsDraggingTarget(true);
+			setIsHoveringTarget(true);
+		} else if (isNearCart(x, y) && !hasFallen) {
+			// Poke the cart on touch
+			const pokeStrength = (Math.random() - 0.5) * 6;
+			const newState = {
+				...stateRef.current,
+				angularVelocity: stateRef.current.angularVelocity + pokeStrength,
+				cartVelocity: stateRef.current.cartVelocity + (Math.random() - 0.5) * 1.5,
+			};
+			stateRef.current = newState;
+			setState(newState);
+		}
+	};
+
+	const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+		if (isDraggingTarget && !hasFallen) {
+			e.preventDefault();
+			const { x } = getTouchPos(e);
+			const centerX = CANVAS_WIDTH / 2;
+			const newTargetX = (x - centerX) / SCALE;
+			setTargetX(Math.max(-TARGET_X_RANGE, Math.min(TARGET_X_RANGE, newTargetX)));
+		}
+	};
+
+	const handleTouchEnd = () => {
+		setIsDraggingTarget(false);
+		setIsHoveringTarget(false);
+	};
+
   const handleReset = () => {
 		const initialState = {
       cartX: 0,
@@ -520,7 +567,7 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
         ref={canvasRef}
 						width={CANVAS_WIDTH * DPR}
 						height={CANVAS_HEIGHT * DPR}
-						className="outline-none border-0 block w-full"
+						className="outline-none border-0 block w-full touch-none"
 						style={{
 							aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`,
 							cursor: isHoveringTarget || isDraggingTarget ? "grab" : isHoveringCart ? "pointer" : "default",
@@ -530,6 +577,9 @@ export default function InvertedPendulum({ showPositionControl = true }: Props) 
 						onMouseUp={handleMouseUp}
 						onMouseLeave={handleMouseLeave}
 						onClick={handleClick}
+						onTouchStart={handleTouchStart}
+						onTouchMove={handleTouchMove}
+						onTouchEnd={handleTouchEnd}
 					/>
 					{hasFallen && (
 						<div 

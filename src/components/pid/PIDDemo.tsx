@@ -159,6 +159,21 @@ export default function PIDDemo({
 		[],
 	);
 
+	const getAngleFromTouch = useCallback(
+		(e: React.TouchEvent<HTMLCanvasElement> | TouchEvent) => {
+			const canvas = canvasRef.current;
+			if (!canvas || !e.touches[0]) return null;
+			const rect = canvas.getBoundingClientRect();
+			const scaleX = CANVAS_WIDTH / rect.width;
+			const scaleY = CANVAS_HEIGHT / rect.height;
+			const x = (e.touches[0].clientX - rect.left) * scaleX - CANVAS_WIDTH / 2;
+			const y =
+				(e.touches[0].clientY - rect.top) * scaleY - (CANVAS_HEIGHT - 35);
+			return -Math.atan2(y, x);
+		},
+		[],
+	);
+
 	const isNearTarget = useCallback(
 		(e: React.MouseEvent<HTMLCanvasElement>) => {
 			const canvas = canvasRef.current;
@@ -174,6 +189,25 @@ export default function PIDDemo({
 			const targetX = centerX + Math.cos(-targetAngle) * (radius + 25);
 			const targetY = centerY + Math.sin(-targetAngle) * (radius + 25);
 			return Math.sqrt((x - targetX) ** 2 + (y - targetY) ** 2) < 25;
+		},
+		[targetAngle],
+	);
+
+	const isNearTargetTouch = useCallback(
+		(e: React.TouchEvent<HTMLCanvasElement>) => {
+			const canvas = canvasRef.current;
+			if (!canvas || !e.touches[0]) return false;
+			const rect = canvas.getBoundingClientRect();
+			const scaleX = CANVAS_WIDTH / rect.width;
+			const scaleY = CANVAS_HEIGHT / rect.height;
+			const x = (e.touches[0].clientX - rect.left) * scaleX;
+			const y = (e.touches[0].clientY - rect.top) * scaleY;
+			const centerX = CANVAS_WIDTH / 2;
+			const centerY = CANVAS_HEIGHT - 35;
+			const radius = Math.min(CANVAS_WIDTH, CANVAS_HEIGHT * 1.5) * 0.4;
+			const targetX = centerX + Math.cos(-targetAngle) * (radius + 25);
+			const targetY = centerY + Math.sin(-targetAngle) * (radius + 25);
+			return Math.sqrt((x - targetX) ** 2 + (y - targetY) ** 2) < 40; // Larger hit area for touch
 		},
 		[targetAngle],
 	);
@@ -696,6 +730,28 @@ export default function PIDDemo({
 		canvas.style.cursor = isNearTarget(e) ? "grab" : "crosshair";
 	};
 
+	const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+		if (isNearTargetTouch(e)) {
+			e.preventDefault();
+			setIsDragging(true);
+		} else {
+			const angle = getAngleFromTouch(e);
+			if (angle !== null) setTargetAngle(clampAngle(angle));
+		}
+	};
+
+	const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+		if (isDragging) {
+			e.preventDefault();
+			const angle = getAngleFromTouch(e);
+			if (angle !== null) setTargetAngle(clampAngle(angle));
+		}
+	};
+
+	const handleTouchEnd = () => {
+		setIsDragging(false);
+	};
+
 	const handleReset = () => {
 		const initialState = {
 			angle: Math.PI / 2,
@@ -744,7 +800,10 @@ export default function PIDDemo({
 							setMousePos(null);
 						}}
 						onMouseEnter={() => setIsInCanvas(true)}
-						className="outline-none border-0 block w-full max-w-[440px]"
+						onTouchStart={handleTouchStart}
+						onTouchMove={handleTouchMove}
+						onTouchEnd={handleTouchEnd}
+						className="outline-none border-0 block w-full max-w-[440px] touch-none"
 						style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}` }}
 					/>
 				</div>
