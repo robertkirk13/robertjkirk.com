@@ -19,6 +19,23 @@ const postsData = sortedPosts.map(post => ({
   readingTime: post.data.readingTime,
   category: post.data.category,
 }));
+
+// Detect active series with their articles
+const seriesMap = new Map<string, { slug: string; title: string; count: number; articles: { title: string; slug: string; order: number }[] }>();
+for (const post of sortedPosts) {
+  if (post.data.series && !seriesMap.has(post.data.series)) {
+    const seriesPosts = sortedPosts
+      .filter((p) => p.data.series === post.data.series && p.data.seriesOrder != null)
+      .sort((a, b) => a.data.seriesOrder! - b.data.seriesOrder!);
+    seriesMap.set(post.data.series, {
+      slug: post.data.series,
+      title: post.data.seriesTitle || post.data.series,
+      count: seriesPosts.length,
+      articles: seriesPosts.map((p) => ({ title: p.data.title, slug: p.slug, order: p.data.seriesOrder! })),
+    });
+  }
+}
+const activeSeries = Array.from(seriesMap.values());
 ---
 
 <Layout>
@@ -56,6 +73,47 @@ const postsData = sortedPosts.map(post => ({
           Thoughts on design and development
         </p>
       </header>
+
+      <!-- Active Series -->
+      {activeSeries.map((series) => (
+        <div class="mb-10 pb-8 border-b border-gray-100 dark:border-neutral-900">
+          <a
+            href={`/series/${series.slug}`}
+            class="group inline-flex items-center gap-2 mb-5"
+          >
+            <span class="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+              {series.title} Series
+            </span>
+            <span class="text-xs text-gray-300 dark:text-neutral-700">&middot;</span>
+            <span class="text-xs text-gray-400 dark:text-neutral-600">
+              {series.count} {series.count === 1 ? 'week' : 'weeks'}
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-blue-400 dark:text-blue-600 group-hover:translate-x-0.5 transition-all">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </a>
+
+          <div class="space-y-0.5">
+            {series.articles.map((article) => (
+              <a
+                href={`/writing/${article.slug}`}
+                class="group flex items-center gap-4 py-2.5 px-3 -mx-3 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-900/50 transition-colors"
+              >
+                <span class="text-[22px] font-bold tabular-nums leading-none text-gray-200 dark:text-neutral-800 group-hover:text-blue-500 dark:group-hover:text-blue-500 transition-colors w-7 text-right flex-shrink-0">
+                  {article.order}
+                </span>
+                <div class="h-5 w-px bg-gray-200 dark:bg-neutral-800 flex-shrink-0" />
+                <span class="text-[15px] text-gray-700 dark:text-neutral-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors font-medium">
+                  {article.title}
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
 
       <!-- Filter Buttons -->
       <div class="flex gap-2 mb-6 flex-wrap" id="filter-buttons">

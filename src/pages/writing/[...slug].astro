@@ -1,5 +1,5 @@
 ---
-// src/pages/blog/[...slug].astro
+// src/pages/writing/[...slug].astro
 import { getCollection } from "astro:content";
 import BlogPostLayout from "../../layouts/BlogPostLayout.astro";
 
@@ -15,8 +15,38 @@ export async function getStaticPaths() {
 // Get the blog post data
 const { entry } = Astro.props;
 const { Content } = await entry.render();
+
+// Fetch all posts (needed for series and recommended)
+const allPosts = await getCollection("blog");
+
+// If this post belongs to a series, fetch all articles in the same series
+let seriesArticles: { slug: string; title: string; seriesOrder: number }[] = [];
+if (entry.data.series) {
+  seriesArticles = allPosts
+    .filter((p) => p.data.series === entry.data.series && p.data.seriesOrder != null)
+    .map((p) => ({
+      slug: p.slug,
+      title: p.data.title,
+      seriesOrder: p.data.seriesOrder!,
+    }))
+    .sort((a, b) => a.seriesOrder - b.seriesOrder);
+}
+
+// Resolve recommended next article
+let recommendedArticle: { slug: string; title: string; description: string; readingTime: number } | undefined;
+if (entry.data.recommendedNext) {
+  const rec = allPosts.find((p) => p.slug === entry.data.recommendedNext);
+  if (rec) {
+    recommendedArticle = {
+      slug: rec.slug,
+      title: rec.data.title,
+      description: rec.data.description,
+      readingTime: rec.data.readingTime,
+    };
+  }
+}
 ---
 
-<BlogPostLayout postData={{...entry.data, slug: entry.slug}}>
+<BlogPostLayout postData={{...entry.data, slug: entry.slug}} seriesArticles={seriesArticles} recommendedArticle={recommendedArticle}>
   <Content />
 </BlogPostLayout>

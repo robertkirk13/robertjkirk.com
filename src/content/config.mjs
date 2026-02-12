@@ -5,6 +5,7 @@ const blog = defineCollection({
   schema: ({ image }) =>
     z.object({
       title: z.string(),
+      subtitle: z.string().optional(),
       date: z.string(),
       formattedDate: z.string(),
       description: z.string(),
@@ -13,6 +14,10 @@ const blog = defineCollection({
       tags: z.array(z.string()).optional(),
       featuredMessage: z.string().optional(),
       category: z.enum(["Interactive", "Philosophy", "Projects"]).optional(),
+      recommendedNext: z.string().optional(),
+      series: z.string().optional(),
+      seriesTitle: z.string().optional(),
+      seriesOrder: z.number().optional(),
     }),
 });
 

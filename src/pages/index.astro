@@ -38,6 +38,25 @@ const currentPosition = sortedTimelineEntries.find(
 	(entry) => entry.data.featuredMessage === "Current Position",
 );
 
+// Detect active series with their articles
+const seriesMap = new Map<string, { slug: string; title: string; count: number; latestTitle: string; latestSlug: string }>();
+for (const post of sortedPosts) {
+	if (post.data.series && !seriesMap.has(post.data.series)) {
+		const seriesPosts = sortedPosts
+			.filter((p) => p.data.series === post.data.series && p.data.seriesOrder != null)
+			.sort((a, b) => a.data.seriesOrder! - b.data.seriesOrder!);
+		const latest = seriesPosts[seriesPosts.length - 1];
+		seriesMap.set(post.data.series, {
+			slug: post.data.series,
+			title: post.data.seriesTitle || post.data.series,
+			count: seriesPosts.length,
+			latestTitle: latest?.data.title || "",
+			latestSlug: latest?.slug || "",
+		});
+	}
+}
+const activeSeries = Array.from(seriesMap.values());
+
 // Get current year for footer
 const currentYear = new Date().getFullYear();
 ---
@@ -116,6 +135,35 @@ const currentYear = new Date().getFullYear();
               </a>
             </div>
 
+            <!-- Active Series -->
+            {activeSeries.map((series) => (
+              <a
+                href={`/series/${series.slug}`}
+                class="group block rounded-xl p-3.5 bg-gray-50 dark:bg-black border border-gray-200 dark:border-neutral-900 hover:border-blue-500 dark:hover:border-blue-500 transition-all mb-3"
+              >
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-medium text-blue-600 dark:text-blue-400">{series.title} Series</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-gray-300 dark:text-neutral-700 group-hover:text-blue-400 transition-colors flex-shrink-0">
+                    <path d="m9 18 6-6-6-6"></path>
+                  </svg>
+                </div>
+                <div class="text-sm text-gray-700 dark:text-neutral-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug">
+                  Latest: {series.latestTitle}
+                </div>
+                <div class="flex items-center gap-1 mt-2">
+                  {Array.from({ length: series.count }).map((_, i) => (
+                    <div class="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  ))}
+                  <span class="text-[10px] text-gray-400 dark:text-neutral-600 ml-1">
+                    {series.count}w
+                  </span>
+                </div>
+              </a>
+            ))}
+
             <!-- Filter Buttons -->
             <div class="flex gap-2 mb-4 flex-wrap" id="filter-buttons">
               <button data-filter="All" class="filter-btn active px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-blue-600 text-white">All</button>
@@ -146,6 +194,11 @@ const currentYear = new Date().getFullYear();
                   >
                     {post.data.title}
                   </h2>
+                  {post.data.subtitle && (
+                    <p class="text-sm text-gray-500 dark:text-neutral-500 italic mb-2">
+                      {post.data.subtitle}
+                    </p>
+                  )}
                   {index === 0 && (
                     <p class="text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                       {post.data.description}
