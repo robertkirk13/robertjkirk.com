@@ -1,0 +1,110 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+
+  const seriesMap = new Map<string, { seriesTitle: string; slug: string }>();
+  for (const post of posts) {
+    if (post.data.series && !seriesMap.has(post.data.series)) {
+      seriesMap.set(post.data.series, {
+        seriesTitle: post.data.seriesTitle || post.data.series,
+        slug: post.data.series,
+      });
+    }
+  }
+
+  return Array.from(seriesMap.values()).map((series) => ({
+    params: { slug: series.slug },
+    props: { seriesSlug: series.slug, seriesTitle: series.seriesTitle },
+  }));
+}
+
+const { seriesSlug, seriesTitle } = Astro.props;
+
+const allPosts = await getCollection("blog");
+const seriesArticles = allPosts
+  .filter((p) => p.data.series === seriesSlug && p.data.seriesOrder != null)
+  .sort((a, b) => a.data.seriesOrder! - b.data.seriesOrder!);
+
+const totalWeeks = seriesArticles.length;
+---
+
+<Layout>
+  <div class="min-h-screen p-4 md:p-8 transition-all">
+    <div
+      class="bg-white dark:bg-black rounded-3xl mx-auto max-w-3xl p-6 md:p-12 shadow-sm border border-gray-200 dark:border-neutral-900"
+    >
+      <header class="mb-10 text-gray-900 dark:text-neutral-100">
+        <a
+          href="/writing"
+          class="inline-flex items-center gap-1.5 text-sm text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400 transition-colors mb-6"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="m12 19-7-7 7-7"></path>
+            <path d="M19 12H5"></path>
+          </svg>
+          Writing
+        </a>
+        <h1 class="text-4xl font-bold">{seriesTitle}</h1>
+        <p class="text-gray-500 dark:text-neutral-500 mt-2">
+          {totalWeeks} {totalWeeks === 1 ? "week" : "weeks"} published
+        </p>
+      </header>
+
+      <div class="space-y-3">
+        {
+          seriesArticles.map((article) => (
+            <a
+              href={`/writing/${article.slug}`}
+              class="group flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-900/50 transition-colors -mx-4"
+            >
+              <span class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-neutral-900 flex items-center justify-center flex-shrink-0 text-xs font-bold text-gray-400 dark:text-neutral-600 group-hover:bg-blue-500 group-hover:text-white transition-colors mt-0.5">
+                {article.data.seriesOrder}
+              </span>
+
+              <div class="flex-1 min-w-0">
+                <h3
+                  class="font-medium text-gray-900 dark:text-neutral-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug"
+                  transition:name={`title-${article.slug}`}
+                >
+                  {article.data.title}
+                </h3>
+                <p class="text-gray-500 dark:text-neutral-500 mt-1 text-sm leading-relaxed line-clamp-2">
+                  {article.data.description}
+                </p>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="text-xs text-gray-400 dark:text-neutral-600">
+                    {article.data.formattedDate}
+                  </span>
+                  <span class="text-xs text-gray-300 dark:text-neutral-700">&middot;</span>
+                  <span class="text-xs text-gray-400 dark:text-neutral-600">
+                    {article.data.readingTime} min
+                  </span>
+                </div>
+              </div>
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="text-gray-200 dark:text-neutral-800 group-hover:text-blue-400 transition-colors mt-2 flex-shrink-0"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</Layout>

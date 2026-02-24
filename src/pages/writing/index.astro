@@ -19,12 +19,13 @@ const postsData = sortedPosts.map(post => ({
   readingTime: post.data.readingTime,
   category: post.data.category,
 }));
+
 ---
 
 <Layout>
   <div class="min-h-screen p-4 md:p-8 transition-all">
     <div
-      class="bg-white dark:bg-black rounded-3xl mx-auto max-w-3xl p-6 md:p-12 shadow-sm border border-gray-200 dark:border-neutral-900"
+      class="bg-white dark:bg-neutral-950 rounded-3xl mx-auto max-w-3xl p-6 md:p-12 shadow-sm border border-gray-200 dark:border-neutral-800"
     >
       <!-- Header with Back Link -->
 
@@ -60,38 +61,40 @@ const postsData = sortedPosts.map(post => ({
       <!-- Filter Buttons -->
       <div class="flex gap-2 mb-6 flex-wrap" id="filter-buttons">
         <button data-filter="All" class="filter-btn active px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-blue-600 text-white">All</button>
-        <button data-filter="Interactive" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-700">Interactive</button>
-        <button data-filter="Philosophy" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-700">Philosophy</button>
-        <button data-filter="Projects" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-700">Projects</button>
+        <button data-filter="Interactive" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/30 dark:hover:text-blue-400">Interactive</button>
+        <button data-filter="Philosophy" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/30 dark:hover:text-blue-400">Philosophy</button>
+        <button data-filter="Projects" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/30 dark:hover:text-blue-400">Projects</button>
       </div>
 
       <!-- Blog Posts Grid -->
-      <div class="space-y-4" id="posts-container">
+      <div class="space-y-3" id="posts-container">
         {sortedPosts.map((post, index) => (
           <a
             href={`/writing/${post.slug}`}
             data-category={post.data.category || ""}
-            class="post-item block group bg-gray-50 dark:bg-neutral-900/70 rounded-2xl p-6 border border-gray-200 dark:border-neutral-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all"
+            class="post-item block group bg-gray-50 dark:bg-black rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-neutral-900 hover:border-blue-500 dark:hover:border-blue-500 transition-all"
           >
             {index === 0 && (
-              <div class="flex items-center gap-2 mb-2">
-                <span class="text-sm font-medium text-blue-600">New</span>
-                <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-              </div>
+              <span class="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1 inline-block">Featured</span>
             )}
-            <h3 
-              class="font-medium text-lg dark:text-neutral-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+            <h3
+              class={`font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors ${index === 0 ? 'text-xl md:text-2xl' : 'text-lg'}`}
               transition:name={`title-${post.slug}`}
             >
               {post.data.title}
             </h3>
-            <p class="text-gray-600 dark:text-neutral-500 my-2">
+            {post.data.subtitle && (
+              <p class="text-sm text-gray-500 dark:text-neutral-500 italic mb-2">
+                {post.data.subtitle}
+              </p>
+            )}
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-2">
               {post.data.description}
             </p>
-            <div class="flex items-center gap-2 mt-4">
-              <span class="text-sm text-gray-500 dark:text-neutral-600">{post.data.formattedDate}</span>
-              <span class="inline-block w-1 h-1 rounded-full bg-gray-500" />
-              <span class="text-sm text-gray-500 dark:text-neutral-600">{post.data.readingTime} min read</span>
+            <div class="flex items-center gap-3 text-sm text-gray-500">
+              <span>{post.data.formattedDate}</span>
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+              <span>{post.data.readingTime} min read</span>
             </div>
           </a>
         ))}

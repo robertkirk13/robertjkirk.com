@@ -1,0 +1,68 @@
+---
+interface SeriesArticle {
+  slug: string;
+  title: string;
+  seriesOrder: number;
+}
+
+interface Props {
+  seriesTitle: string;
+  seriesSlug: string;
+  currentOrder: number;
+  articles: SeriesArticle[];
+}
+
+const { seriesTitle, seriesSlug, currentOrder, articles } = Astro.props;
+
+const sorted = [...articles].sort((a, b) => a.seriesOrder - b.seriesOrder);
+---
+
+<div class="hidden xl:block absolute -right-56 top-0 w-48 h-full pointer-events-none">
+  <nav class="sticky top-28 pointer-events-auto">
+    <a
+      href={`/series/${seriesSlug}`}
+      class="group flex items-center gap-1.5 mb-4"
+    >
+      <span class="text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-300 dark:text-neutral-700 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">{seriesTitle}</span>
+    </a>
+
+    <div class="space-y-px">
+      {sorted.map((article) => {
+        const isCurrent = article.seriesOrder === currentOrder;
+        return (
+          <a
+            href={isCurrent ? undefined : `/writing/${article.slug}`}
+            class:list={[
+              "group flex items-start gap-2 py-2 rounded-lg transition-all",
+              isCurrent
+                ? "cursor-default"
+                : "hover:translate-x-0.5",
+            ]}
+          >
+            <span
+              class:list={[
+                "w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 text-[10px] font-bold transition-colors mt-px",
+                isCurrent
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 dark:bg-neutral-900 text-gray-400 dark:text-neutral-600 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/30 group-hover:text-blue-500",
+              ]}
+            >
+              {article.seriesOrder}
+            </span>
+
+            <span
+              class:list={[
+                "text-xs leading-snug transition-colors",
+                isCurrent
+                  ? "text-gray-900 dark:text-neutral-100 font-medium"
+                  : "text-gray-400 dark:text-neutral-600 group-hover:text-gray-700 dark:group-hover:text-neutral-300",
+              ]}
+            >
+              {article.title}
+            </span>
+          </a>
+        );
+      })}
+    </div>
+  </nav>
+</div>

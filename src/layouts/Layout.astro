@@ -32,7 +32,6 @@ interface Props {
       data-cf-beacon='{"token": "33eee5331e1d41cd9abfa65cefddfc8a"}'></script>
   </head>
   <body class="">
-    <div class="stripes"></div>
       <a
         href="/"
         aria-label="rk logo"
@@ -268,35 +267,6 @@ interface Props {
       height: 100%;
     }
 
-    .stripes {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      background: repeating-linear-gradient(
-        -45deg,
-        rgba(255, 255, 255, 0.01) 0px,
-        rgb(255, 255, 255, 0.03) 1px,
-        rgba(0, 0, 0, 0) 1px,
-        rgba(0, 0, 0, 0) 8px
-      );
-
-      -webkit-mask-image: radial-gradient(
-        circle,
-        rgba(0, 0, 0, 1) 50%,
-        rgba(0, 0, 0, 0) 100%
-      );
-      mask-image: radial-gradient(
-        circle,
-        rgba(0, 0, 0, 1) 50%,
-        rgba(0, 0, 0, 0) 100%
-      );
-
-      z-index: -1;
-    }
 
     /* View Transitions Styles */
     @media (prefers-reduced-motion: no-preference) {
