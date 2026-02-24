@@ -40,7 +40,7 @@ const { postData, seriesArticles = [], recommendedArticle } = Astro.props;
 import ShareButton from "../components/ShareButton.astro";
 import XShare from "../components/XShare.astro";
 import SeriesNavigation from "../components/SeriesNavigation.astro";
-import SeriesSidebar from "../components/SeriesSidebar.astro";
+// SeriesSidebar content is now inlined in the unified right sidebar
 
 // Get the cover image URL for social sharing
 const siteUrl = "https://robertjkirk.com";
@@ -80,22 +80,96 @@ const ogImage = postData.coverImage
   </Fragment>
   <div class="min-h-screen p-2 px-0.5 sm:p-4 sm:px-1 xl:p-8 transition-all">
     <div class="max-w-[50rem] mx-auto relative">
-      {postData.series && postData.seriesOrder && seriesArticles.length > 0 && (
-        <SeriesSidebar
-          seriesTitle={postData.seriesTitle || postData.series}
-          seriesSlug={postData.series}
-          currentOrder={postData.seriesOrder}
-          articles={seriesArticles}
-        />
-      )}
+      <!-- Right sidebar: actions + TOC + series -->
+      <div class="hidden xl:block absolute -right-[11rem] top-0 w-40 h-full pointer-events-none">
+        <div class="sticky top-8 pointer-events-auto">
+          <!-- Action buttons — compact horizontal row -->
+          <div class="flex items-center gap-1.5 mb-8">
+            <a
+              href="/"
+              class="w-8 h-8 rounded-full bg-gray-100 dark:bg-neutral-800 flex items-center justify-center text-gray-400 dark:text-neutral-500 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 transition-colors"
+              aria-label="Close and go back"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </a>
+            <XShare />
+            <ShareButton
+              title={postData.title}
+              text={postData.description}
+              url={postData.slug}
+            />
+          </div>
+
+          <!-- Table of Contents -->
+          <nav id="table-of-contents" class="border-l-2 border-gray-100 dark:border-neutral-800 pl-3">
+            <span class="text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-300 dark:text-neutral-700">
+              Contents
+            </span>
+            <div id="toc-links" class="mt-2.5 space-y-0.5"></div>
+          </nav>
+
+          <!-- Series navigation -->
+          {postData.series && postData.seriesOrder && seriesArticles.length > 0 && (
+            <div class="mt-8 border-l-2 border-gray-100 dark:border-neutral-800 pl-3">
+              <a href={`/series/${postData.series}`} class="group flex items-center gap-1.5 mb-3">
+                <span class="text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-300 dark:text-neutral-700 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
+                  {postData.seriesTitle || postData.series}
+                </span>
+              </a>
+              <div class="space-y-px">
+                {[...seriesArticles].sort((a, b) => a.seriesOrder - b.seriesOrder).map((article) => {
+                  const isCurrent = article.seriesOrder === postData.seriesOrder;
+                  return (
+                    <a
+                      href={isCurrent ? undefined : `/writing/${article.slug}`}
+                      class:list={[
+                        "group flex items-start gap-2 py-1.5 transition-all",
+                        isCurrent ? "cursor-default" : "hover:translate-x-0.5",
+                      ]}
+                    >
+                      <span
+                        class:list={[
+                          "w-4 h-4 rounded flex items-center justify-center flex-shrink-0 text-[9px] font-bold transition-colors mt-px",
+                          isCurrent
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-100 dark:bg-neutral-900 text-gray-400 dark:text-neutral-600 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/30 group-hover:text-blue-500",
+                        ]}
+                      >
+                        {article.seriesOrder}
+                      </span>
+                      <span
+                        class:list={[
+                          "text-[11px] leading-snug transition-colors",
+                          isCurrent
+                            ? "text-gray-900 dark:text-neutral-100 font-medium"
+                            : "text-gray-400 dark:text-neutral-600 group-hover:text-gray-700 dark:group-hover:text-neutral-300",
+                        ]}
+                      >
+                        {article.title}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <!-- Article -->
       <article
         class="bg-white dark:bg-zinc-950 rounded-3xl p-3 sm:p-6 md:p-12 transition-all shadow-sm border border-gray-100 dark:border-zinc-900"
       >
         <div
-          class="sticky top-4 float-right cursor-pointer z-50 gap-5 flex sm:flex-row flex-col bg-white/10 dark:bg-black/5 backdrop-blur-lg sm:px-4 sm:py-1 px-2 py-2 rounded-3xl"
+          class="xl:hidden sticky top-4 float-right cursor-pointer z-50 gap-3 flex flex-col items-center bg-white/10 dark:bg-black/5 backdrop-blur-lg px-2 py-2 rounded-3xl"
         >
+          <a
+            href="/"
+            class="w-8 h-8 rounded-full bg-gray-100 dark:bg-neutral-800 flex items-center justify-center text-gray-400 dark:text-neutral-500 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 transition-colors"
+            aria-label="Close and go back"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </a>
           <XShare />
           <ShareButton
             title={postData.title}
@@ -103,7 +177,7 @@ const ogImage = postData.coverImage
             url={postData.slug}
           />
         </div>
-        <header class="mb-8 relative mr-12">
+        <header class="mb-8 relative mr-12 xl:mr-0">
           <!-- <a
       href=`https://twitter.com/share?url=${encodeURIComponent(Astro.url)}&text=Check%20out%20this%20article!`
       target="_blank"
@@ -224,4 +298,61 @@ const ogImage = postData.coverImage
       </div>
     </div>
   </div>
+  <script>
+    function initTOC() {
+      const article = document.querySelector('.prose');
+      const tocContainer = document.getElementById('toc-links');
+      const tocNav = document.getElementById('table-of-contents');
+      if (!article || !tocContainer) return;
+
+      // Clear any previous TOC content (for View Transitions)
+      tocContainer.innerHTML = '';
+
+      const headings = article.querySelectorAll('h2');
+      if (headings.length === 0) {
+        if (tocNav) tocNav.style.display = 'none';
+        return;
+      }
+      if (tocNav) tocNav.style.display = '';
+
+      headings.forEach((heading) => {
+        if (!heading.id) return;
+        const link = document.createElement('a');
+        link.href = `#${heading.id}`;
+        link.textContent = heading.textContent || '';
+        link.className = 'toc-link block text-[11px] leading-snug py-1 -ml-[calc(0.75rem+2px)] pl-[calc(0.75rem-1px)] border-l-[3px] border-transparent text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400 transition-all';
+        link.dataset.headingId = heading.id;
+        tocContainer.appendChild(link);
+      });
+
+      // Scroll spy: highlight active heading with left accent
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const id = entry.target.id;
+              tocContainer.querySelectorAll('a').forEach((link) => {
+                if (link.dataset.headingId === id) {
+                  link.classList.remove('text-gray-400', 'dark:text-neutral-600', 'border-transparent');
+                  link.classList.add('text-gray-900', 'dark:text-neutral-200', 'font-medium', 'border-blue-500');
+                } else {
+                  link.classList.remove('text-gray-900', 'dark:text-neutral-200', 'font-medium', 'border-blue-500');
+                  link.classList.add('text-gray-400', 'dark:text-neutral-600', 'border-transparent');
+                }
+              });
+            }
+          });
+        },
+        { rootMargin: '-80px 0px -70% 0px' }
+      );
+
+      headings.forEach((heading) => {
+        if (heading.id) observer.observe(heading);
+      });
+    }
+
+    // Run on initial load and after View Transitions navigation
+    initTOC();
+    document.addEventListener('astro:after-swap', initTOC);
+  </script>
 </Layout>
