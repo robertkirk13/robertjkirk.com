@@ -1,264 +1,359 @@
 ---
-// src/pages/index.astro
 import { getCollection } from "astro:content";
-
-import ContactCard from "../components/ContactCard.astro";
-import TimelineEntry from "../components/TimelineEntry.astro";
-import WritingFilter from "../components/WritingFilter";
-
-import astroLogo from "../assets/rjk.svg";
 import Layout from "../layouts/Layout.astro";
+import headshot from "../assets/rk.jpeg";
 
-// Get all blog posts and sort by date
 const posts = await getCollection("blog");
 const sortedPosts = posts.sort(
-	(a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
 );
 
-// Prepare posts data for client component
-const postsData = sortedPosts.map((post) => ({
-	slug: post.slug,
-	title: post.data.title,
-	description: post.data.description,
-	formattedDate: post.data.formattedDate,
-	readingTime: post.data.readingTime,
-	category: post.data.category,
-}));
-
-// Get the latest post and the rest
-const [latestPost, ...previousPosts] = sortedPosts;
-
-const timelineEntries = await getCollection("timeline");
-const sortedTimelineEntries = timelineEntries.sort(
-	(a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
-);
-
-// Get current position (Tesla)
-const currentPosition = sortedTimelineEntries.find(
-	(entry) => entry.data.featuredMessage === "Current Position",
-);
-
-// Get current year for footer
-const currentYear = new Date().getFullYear();
+const topPosts = sortedPosts.slice(0, 2);
 ---
 
 <Layout>
-  <div class="min-h-screen p-4 md:p-6 flex flex-col">
-    <div class="max-w-3xl mx-auto space-y-4 flex-grow w-full">
-      <!-- Hero Section - Clean -->
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-2">
-        <div class="px-6">
-          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-            Robert Kirk
-          </h1>
-          <p class="text-gray-700 dark:text-gray-300 mt-1 font-medium">
-            Building tools to automate engineering with AI.
-          </p>
+  <div class="min-h-screen c10-bg flex flex-col">
+
+    <!-- Island centered vertically -->
+    <div class="flex-grow flex flex-col items-center justify-center px-4 md:px-6 py-6">
+      <div class="c10-island w-full max-w-3xl">
+
+        <!-- Header -->
+        <div class="relative px-4 md:px-6 pt-4 md:pt-6 pb-5">
+          <div class="flex items-center gap-4 sm:pr-32">
+            <img
+              src={headshot.src}
+              alt="Robert Kirk"
+              class="c10-headshot"
+            />
+            <div>
+              <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight">
+                Robert Kirk
+              </h1>
+              <p class="text-sm text-gray-500 dark:text-neutral-400 mt-0.5">
+                Building tools to automate engineering with AI.
+              </p>
+            </div>
+          </div>
+          <a href="/contact" class="c10-contact-btn">
+            Contact me
+          </a>
         </div>
-        <a
-          href="/contact"
-          class="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-sm rounded-full font-medium transition-all hover:scale-105"
-        >
-          Contact me
-        </a>
-      </div>
-
-      <!-- Main Content Grid - Asymmetric Layout -->
-      <div class="grid grid-cols-1 gap-4">
-        <!-- Left Column: Combined Writing Section -->
-        <div>
-          <div class="bg-white dark:bg-neutral-950 rounded-3xl p-4 md:p-6 border border-gray-200 dark:border-neutral-800">
-            <div class="flex justify-between items-center mb-6">
-              <div class="flex items-center gap-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-book-open-text text-gray-900 dark:text-white"
-                >
-                  <path d="M12 7v14"></path>
-                  <path d="M16 12h2"></path>
-                  <path d="M16 8h2"></path>
-                  <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path>
-                  <path d="M6 12h2"></path>
-                  <path d="M6 8h2"></path>
-                </svg>
-                <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                  Writing
-                </h3>
-              </div>
+        <!-- Cards grid -->
+        <div class="px-4 md:px-6 pt-0.5 pb-1">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {topPosts.map((post, index) => (
               <a
-                href="/writing"
-                class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 group/link"
+                href={`/writing/${post.slug}`}
+                class="group block c10-card"
               >
-                View All
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-arrow-right group-hover/link:translate-x-1 transition-transform"
-                >
-                  <path d="M5 12h14"></path>
-                  <path d="m12 5 7 7-7 7"></path>
-                </svg>
-              </a>
-            </div>
-
-            <!-- Filter Buttons -->
-            <div class="flex gap-2 mb-4 flex-wrap" id="filter-buttons">
-              <button data-filter="All" class="filter-btn active px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-blue-600 text-white">All</button>
-              <button data-filter="Interactive" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-700">Interactive</button>
-              <button data-filter="Philosophy" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-700">Philosophy</button>
-              <button data-filter="Projects" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-700">Projects</button>
-            </div>
-
-            <!-- Posts -->
-            <div class="space-y-3" id="posts-container">
-              {sortedPosts.map((post, index) => (
-                <a
-                  href={`/writing/${post.slug}`}
-                  data-category={post.data.category || ""}
-                  class="post-item block group bg-gray-50 dark:bg-black rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-neutral-900 hover:border-blue-500 dark:hover:border-blue-500 transition-all"
-                >
-                  {index === 0 && (
-                    <div class="flex items-center gap-2 mb-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles text-blue-600">
-                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
-                      </svg>
-                      <span class="text-sm font-semibold text-blue-600 uppercase tracking-wide">Latest Post</span>
-                    </div>
-                  )}
-                  <h2 
-                    class={`font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors ${index === 0 ? 'text-xl md:text-2xl' : 'text-lg'}`}
-                    transition:name={`title-${post.slug}`}
-                  >
+                <div class="p-5 md:p-6 flex flex-col h-full">
+                  <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-neutral-500 mb-2">
+                    <span>{post.data.formattedDate}</span>
+                    <span class="inline-block w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-600"></span>
+                    <span>{post.data.readingTime} min read</span>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 dark:text-white transition-colors leading-snug flex-grow c10-card-title" transition:name={`title-${post.slug}`}>
                     {post.data.title}
-                  </h2>
-                  {index === 0 && (
-                    <p class="text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                  </h3>
+                  {post.data.description && (
+                    <p class="text-sm text-gray-500 dark:text-neutral-400 mt-2 leading-relaxed">
                       {post.data.description}
                     </p>
                   )}
-                  <div class="flex items-center gap-3 text-sm text-gray-500">
-                    <span>{post.data.formattedDate}</span>
-                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-                    <span>{post.data.readingTime} min read</span>
+                  <div class="mt-4 flex items-center gap-1 c10-read-link text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Read</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-0.5 transition-transform">
+                      <path d="m9 18 6-6-6-6"></path>
+                    </svg>
                   </div>
-                </a>
-              ))}
-            </div>
-
-            <script>
-              document.addEventListener('astro:page-load', () => {
-                const buttons = document.querySelectorAll('.filter-btn');
-                const posts = document.querySelectorAll('.post-item');
-                
-                buttons.forEach(btn => {
-                  btn.addEventListener('click', () => {
-                    const filter = btn.getAttribute('data-filter');
-                    
-                    // Update button styles
-                    buttons.forEach(b => {
-                      b.classList.remove('bg-blue-600', 'text-white');
-                      b.classList.add('bg-gray-100', 'dark:bg-neutral-800', 'text-gray-600', 'dark:text-gray-400');
-                    });
-                    btn.classList.remove('bg-gray-100', 'dark:bg-neutral-800', 'text-gray-600', 'dark:text-gray-400');
-                    btn.classList.add('bg-blue-600', 'text-white');
-                    
-                    // Filter posts
-                    posts.forEach(post => {
-                      const category = post.getAttribute('data-category');
-                      if (filter === 'All' || category === filter) {
-                        post.style.display = 'block';
-                      } else {
-                        post.style.display = 'none';
-                      }
-                    });
-                  });
-                });
-              });
-            </script>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+        <!-- Footer row -->
+        <div class="px-6 md:px-8 pt-3 pb-4 flex items-center justify-between">
+          <a href="/writing" class="group flex items-center gap-1 text-xs text-gray-500 dark:text-neutral-400 transition-colors c10-footer-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 7v14"></path><path d="M16 12h2"></path><path d="M16 8h2"></path>
+              <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path>
+              <path d="M6 12h2"></path><path d="M6 8h2"></path>
+            </svg>
+            <span class="font-medium">View Writing</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-0.5 transition-transform">
+              <path d="m9 18 6-6-6-6"></path>
+            </svg>
+          </a>
+          <div class="flex items-center gap-4">
+            <a href="https://www.linkedin.com/in/robertjkirk/" target="_blank" class="c10-social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle>
+              </svg>
+            </a>
+            <a href="mailto:contact@robertjkirk.com" class="c10-social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+            </a>
           </div>
         </div>
 
-        <!-- RIGHT COLUMN COMMENTED OUT
-        <div class="space-y-4">
-          {currentPosition && (
-            <div class="bg-white dark:bg-neutral-950 rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-neutral-800">
-              <div class="flex items-center gap-2 mb-4">
-                <div class="relative flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                </div>
-                <h3 class="text-sm font-semibold text-green-600 dark:text-green-400 uppercase tracking-wide">
-                   Working On
-                </h3>
-              </div>
-              <a
-                href={`/timeline/${currentPosition.slug}`}
-                class="block group"
-              >
-                <h4 class="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  {currentPosition.data.title}
-                </h4>
-                {currentPosition.data.description && (
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    {currentPosition.data.description}
-                  </p>
-                )}
-                <div class="flex flex-wrap gap-2">
-                  {currentPosition.data.tags?.map((tag: string) => (
-                    <span class="px-3 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-medium">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </a>
-              <a
-                href="/timeline"
-                class="mt-6 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 group/more"
-              >
-                View Full Timeline
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-arrow-right group-hover/more:translate-x-1 transition-transform"
-                >
-                  <path d="M5 12h14"></path>
-                  <path d="m12 5 7 7-7 7"></path>
-                </svg>
-              </a>
-            </div>
-          )}
-
-          <div class="bg-white dark:bg-neutral-950 rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-neutral-800">
-            <ContactCard
-              email="hi@robertjkirk.com"
-              linkedin="robertjkirk"
-            />
-          </div>
-        </div>
-        END RIGHT COLUMN COMMENTED OUT -->
       </div>
+    </div>
+
+    <!-- RK logo pinned bottom center -->
+    <div class="group/bottom w-full flex justify-center pb-3 relative">
+      <span class="c10-copyright">Copyright &copy; 2026 Robert Kirk</span>
+      <a href="/" aria-label="home" class="inline-block c10-logo-link">
+        <svg width="42" height="28" viewBox="0 0 949 602" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g clip-path="url(#c10clip)">
+            <path d="M398.411 408.5C437.984 391.325 468.532 366.53 490.056 334.115C511.58 301.7 522.328 263.149 522.3 218.46C522.3 173.716 511.689 135.007 490.468 102.331C469.246 69.6555 439.028 44.4349 399.812 26.6692C360.5 8.82119 314.177 -0.0684959 260.841 0.000150378H0V113.514H252.929C294.81 113.514 326.656 122.547 348.468 140.615C370.28 158.683 381.173 184.631 381.145 218.46C381.145 251.726 370.253 277.516 348.468 295.831C326.683 314.146 294.837 323.324 252.929 323.365H0V602H139.404V434.325H267.62L383.762 602H533.488L398.411 408.5Z" fill="#3D83F6"></path>
+            <path d="M684.821 268.297L934.351 0H779.495L561.097 230.342C559.304 277.708 546.365 319.864 522.609 355.656C504.974 382.114 482.117 404.693 455.442 422.01L490.859 472.712L593.753 365.5L786.479 602H949.103L684.821 268.297Z" fill="#3D83F6"></path>
+            <path d="M490.756 472.712L455.339 422.01C482.014 404.693 504.87 382.114 522.506 355.656C546.262 319.864 559.201 277.77 560.994 230.342C560.994 230.342 591.219 356.933 490.756 472.712Z" fill="#3D83F6"></path>
+          </g>
+          <defs><clipPath id="c10clip"><rect width="949" height="602" fill="white"></rect></clipPath></defs>
+        </svg>
+      </a>
     </div>
   </div>
 </Layout>
+
+<style>
+  /* ── Hide the Layout's fixed logo ── */
+  :global([aria-label="rk logo"]) {
+    display: none !important;
+  }
+  .c10-logo-link {
+    transition: opacity 0.15s ease;
+  }
+  .c10-logo-link:hover {
+    opacity: 0.7;
+  }
+  .c10-copyright {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    font-size: 11px;
+    color: transparent;
+    transition: color 0.3s ease;
+    user-select: none;
+  }
+  .group\/bottom:hover .c10-copyright {
+    color: rgba(0, 0, 0, 0.2);
+  }
+  @media (prefers-color-scheme: dark) {
+    .group\/bottom:hover .c10-copyright {
+      color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  /* ── Override html bg + hide Layout footer ── */
+  :global(html) {
+    background: linear-gradient(180deg, #eff6ff 0%, #f0f4ff 30%, #f8fafc 60%, #f1f5f9 100%) !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(html) {
+      background: linear-gradient(180deg, #0a0a0a 0%, #0c0c0c 30%, #0a0a0a 60%, #080808 100%) !important;
+    }
+  }
+  :global(footer) {
+    display: none !important;
+  }
+
+  /* ── Page background ── */
+  .c10-bg {
+    background: linear-gradient(180deg, #eff6ff 0%, #f0f4ff 30%, #f8fafc 60%, #f1f5f9 100%);
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-bg {
+      background: linear-gradient(180deg, #0a0a0a 0%, #0c0c0c 30%, #0a0a0a 60%, #080808 100%);
+    }
+  }
+
+  /* ── Glass island card ── */
+  .c10-island {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border-radius: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.02),
+      0 4px 16px rgba(0, 0, 0, 0.03),
+      0 16px 48px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-island {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(40px) saturate(150%);
+      -webkit-backdrop-filter: blur(40px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.3),
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        0 16px 48px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+    }
+  }
+
+  /* ── Headshot ── */
+  .c10-headshot {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    object-fit: cover;
+    object-position: center top;
+    border: none;
+    flex-shrink: 0;
+  }
+
+  /* ── Contact button — full round, same inset as photo ── */
+  .c10-contact-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 10px 22px;
+    background: #3D83F6;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 9999px;
+    transition: background 0.15s ease;
+    z-index: 1;
+  }
+  .c10-contact-btn:hover {
+    background: #2b6de0;
+  }
+  @media (min-width: 768px) {
+    .c10-contact-btn {
+      top: 1.5rem;
+      right: 1.5rem;
+    }
+  }
+  @media (max-width: 639px) {
+    .c10-contact-btn {
+      position: static;
+      display: inline-block;
+      margin-top: 14px;
+      margin-left: 78px;
+    }
+  }
+
+  /* ── Learn more link ── */
+  .c10-learn-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: #3D83F6;
+    font-weight: 500;
+    font-size: 12px;
+    transition: color 0.15s ease;
+    white-space: nowrap;
+  }
+  .c10-learn-more:hover {
+    color: #2b6de0;
+  }
+
+  /* ── Dividers ── */
+  .c10-divider {
+    margin: 0 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.03);
+  }
+  @media (min-width: 768px) {
+    .c10-divider {
+      margin: 0 1.5rem;
+    }
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-divider {
+      border-color: rgba(255, 255, 255, 0.03);
+    }
+  }
+
+  /* ── Article card — transparent default, glassy on hover ── */
+  .c10-card {
+    position: relative;
+    border-radius: 1.75rem;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    background: rgba(225, 230, 240, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(50px) saturate(140%);
+    -webkit-backdrop-filter: blur(50px) saturate(140%);
+  }
+  .c10-card > * { position: relative; z-index: 1; }
+  .c10-card::before {
+    content: '';
+    position: absolute;
+    inset: -30px;
+    background: linear-gradient(135deg, #3D83F6 0%, transparent 60%);
+    filter: blur(50px);
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.25s ease;
+  }
+  .c10-card:hover {
+    border-color: rgba(61, 131, 246, 0.1);
+  }
+  .c10-card:hover::before {
+    opacity: 0.15;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-card {
+      background: rgba(255, 255, 255, 0.025);
+      border-color: rgba(255, 255, 255, 0.07);
+      box-shadow: none;
+      backdrop-filter: blur(50px);
+      -webkit-backdrop-filter: blur(50px);
+    }
+    .c10-card:hover {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    .c10-card:hover::before {
+      opacity: 0.12;
+    }
+  }
+
+  /* ── Blue links ── */
+  .c10-read-link {
+    color: #3D83F6;
+  }
+  .c10-blue-link {
+    color: #3D83F6;
+  }
+  .c10-blue-link:hover {
+    color: #2b6de0;
+  }
+  .c10-card-title {
+    /* title hover handled by group */
+  }
+  .group:hover .c10-card-title {
+    color: #3D83F6;
+  }
+  .c10-footer-link:hover {
+    color: #3D83F6;
+  }
+
+  /* ── Social links ── */
+  .c10-social-link {
+    color: #d1d5db;
+    transition: color 0.15s ease;
+  }
+  .c10-social-link:hover {
+    color: #3D83F6;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-social-link {
+      color: #525252;
+    }
+    .c10-social-link:hover {
+      color: #3D83F6;
+    }
+  }
+</style>

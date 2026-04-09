@@ -1,109 +1,197 @@
 ---
-// src/pages/contact.astro
-
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
-  <div class="min-h-screen p-4 md:p-8">
-    <div
-      class="bg-white dark:bg-black rounded-3xl mx-auto max-w-3xl p-6 md:p-12 shadow-sm border border-gray-200 dark:border-neutral-900"
-    >
-      <!-- Header with Back Link -->
+  <div class="min-h-screen c10-bg flex flex-col">
+    <div class="flex-grow flex flex-col items-center justify-center px-4 md:px-6 py-6">
+      <div class="c10-island w-full max-w-3xl">
 
-      <!-- Blog Header -->
-      <header class="mb-12 text-gray-900 dark:text-neutral-100" >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="36"
-          height="36"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-contact-round"
-          ><path d="M16 2v2"></path><path d="M17.915 22a6 6 0 0 0-12 0"
-          ></path><path d="M8 2v2"></path><circle cx="12" cy="12" r="4"
-          ></circle><rect x="3" y="4" width="18" height="18" rx="2"></rect></svg
-        >
-        <h1 class="text-4xl font-bold  mt-2">Contact</h1>
-        <p class="text-lg text-gray-600 dark:text-neutral-500 mt-2">Reach out!</p>
-      </header>
-
-      <!-- Blog Posts Grid -->
-      <div class="gap-6 flex-wrap flex">
-        <a target="_blank" href="https://www.linkedin.com/in/robertjkirk/">
-          <div
-            class={`rounded-2xl p-4 px-6  text-blue-500 hover:bg-blue-500/10 transition-all border border-blue-500 w-fit`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-linkedin"
-              ><path
-                d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"
-              ></path><rect width="4" height="12" x="2" y="9"></rect><circle
-                cx="4"
-                cy="4"
-                r="2"></circle></svg
-            >
-            <p class="mt-2 font-medium">@robertjkirk</p>
-          </div>
-        </a>
-        <a href="mailto:contact@robertjkirk.com">
-          <div
-            class={`rounded-2xl p-4 px-6  text-gray-500 hover:bg-gray-500/10 transition-all border border-gray-500 w-fit`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-mail"
-              ><rect width="20" height="16" x="2" y="4" rx="2"></rect><path
-                d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg
-            >
-            <p class="mt-2 font-medium">contact@robertjkirk.com</p>
-          </div>
-        </a>
-        <a target="_blank" href="https://x.com/_robertkirk_">
-          <div
-            class={`rounded-2xl p-4 px-6 text-neutral-400 hover:bg-neutral-400/10 transition-all border border-neutral-400 w-fit`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        <!-- Header -->
+        <div class="px-4 md:px-6 pt-4 md:pt-6 pb-5">
+          <a href="/" class="group inline-flex items-center gap-1 text-xs font-medium c10-back-link mb-4">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-0.5 transition-transform">
+              <path d="m15 18-6-6 6-6"></path>
             </svg>
-            <p class="mt-2 font-medium">@_robertkirk_</p>
-          </div>
-        </a>
-        <!-- <a  href="mailto:hi@robertjkirk.com">
-        <div class={`rounded-2xl p-4 px-6  text-gray-500 hover:bg-gray-500/20 transition-all border border-gray-500 w-fit`}>
-            
-            <p class="text-3xl h-[10]">𝕏</p>
-            <p class="mt-2 font-medium">hi@robertjkirk.com</p>
+            <span>Home</span>
+          </a>
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+            Contact
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-neutral-400 mt-1">
+            Reach out!
+          </p>
         </div>
-    </a> -->
+
+        <div class="c10-divider"></div>
+
+        <!-- Contact cards -->
+        <div class="px-4 md:px-6 py-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <a href="https://www.linkedin.com/in/robertjkirk/" target="_blank" class="group block c10-card">
+              <div class="p-5 md:p-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 dark:text-neutral-500 group-hover:text-[#3D83F6] transition-colors">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle>
+                </svg>
+                <p class="mt-3 font-medium text-sm text-gray-900 dark:text-white c10-card-title transition-colors">LinkedIn</p>
+                <p class="text-xs text-gray-400 dark:text-neutral-500 mt-1">@robertjkirk</p>
+              </div>
+            </a>
+
+            <a href="mailto:contact@robertjkirk.com" class="group block c10-card">
+              <div class="p-5 md:p-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 dark:text-neutral-500 group-hover:text-[#3D83F6] transition-colors">
+                  <rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                </svg>
+                <p class="mt-3 font-medium text-sm text-gray-900 dark:text-white c10-card-title transition-colors">Email</p>
+                <p class="text-xs text-gray-400 dark:text-neutral-500 mt-1">contact@robertjkirk.com</p>
+              </div>
+            </a>
+
+            <a href="https://x.com/_robertkirk_" target="_blank" class="group block c10-card">
+              <div class="p-5 md:p-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-gray-400 dark:text-neutral-500 group-hover:text-[#3D83F6] transition-colors">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                <p class="mt-3 font-medium text-sm text-gray-900 dark:text-white c10-card-title transition-colors">X</p>
+                <p class="text-xs text-gray-400 dark:text-neutral-500 mt-1">@_robertkirk_</p>
+              </div>
+            </a>
+          </div>
+        </div>
+
       </div>
+    </div>
+
+    <!-- RK logo pinned bottom center -->
+    <div class="group/bottom w-full flex justify-center pb-3 relative">
+      <span class="c10-copyright">Copyright &copy; 2026 Robert Kirk</span>
+      <a href="/" aria-label="home" class="inline-block c10-logo-link">
+        <svg width="42" height="28" viewBox="0 0 949 602" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g clip-path="url(#c10clip)">
+            <path d="M398.411 408.5C437.984 391.325 468.532 366.53 490.056 334.115C511.58 301.7 522.328 263.149 522.3 218.46C522.3 173.716 511.689 135.007 490.468 102.331C469.246 69.6555 439.028 44.4349 399.812 26.6692C360.5 8.82119 314.177 -0.0684959 260.841 0.000150378H0V113.514H252.929C294.81 113.514 326.656 122.547 348.468 140.615C370.28 158.683 381.173 184.631 381.145 218.46C381.145 251.726 370.253 277.516 348.468 295.831C326.683 314.146 294.837 323.324 252.929 323.365H0V602H139.404V434.325H267.62L383.762 602H533.488L398.411 408.5Z" fill="#3D83F6"></path>
+            <path d="M684.821 268.297L934.351 0H779.495L561.097 230.342C559.304 277.708 546.365 319.864 522.609 355.656C504.974 382.114 482.117 404.693 455.442 422.01L490.859 472.712L593.753 365.5L786.479 602H949.103L684.821 268.297Z" fill="#3D83F6"></path>
+            <path d="M490.756 472.712L455.339 422.01C482.014 404.693 504.87 382.114 522.506 355.656C546.262 319.864 559.201 277.77 560.994 230.342C560.994 230.342 591.219 356.933 490.756 472.712Z" fill="#3D83F6"></path>
+          </g>
+          <defs><clipPath id="c10clip"><rect width="949" height="602" fill="white"></rect></clipPath></defs>
+        </svg>
+      </a>
     </div>
   </div>
 </Layout>
+
+<style>
+  :global([aria-label="rk logo"]) { display: none !important; }
+  :global(footer) { display: none !important; }
+  :global(html) {
+    background: linear-gradient(180deg, #eff6ff 0%, #f0f4ff 30%, #f8fafc 60%, #f1f5f9 100%) !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(html) {
+      background: linear-gradient(180deg, #0a0a0a 0%, #0c0c0c 30%, #0a0a0a 60%, #080808 100%) !important;
+    }
+  }
+  .c10-bg {
+    background: linear-gradient(180deg, #eff6ff 0%, #f0f4ff 30%, #f8fafc 60%, #f1f5f9 100%);
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-bg {
+      background: linear-gradient(180deg, #0a0a0a 0%, #0c0c0c 30%, #0a0a0a 60%, #080808 100%);
+    }
+  }
+  .c10-island {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border-radius: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.02),
+      0 4px 16px rgba(0, 0, 0, 0.03),
+      0 16px 48px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-island {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(40px) saturate(150%);
+      -webkit-backdrop-filter: blur(40px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.3),
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        0 16px 48px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+    }
+  }
+  .c10-logo-link { transition: opacity 0.15s ease; }
+  .c10-logo-link:hover { opacity: 0.7; }
+  .c10-copyright {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    font-size: 11px;
+    color: transparent;
+    transition: color 0.3s ease;
+    user-select: none;
+  }
+  .group\/bottom:hover .c10-copyright {
+    color: rgba(0, 0, 0, 0.2);
+  }
+  @media (prefers-color-scheme: dark) {
+    .group\/bottom:hover .c10-copyright {
+      color: rgba(255, 255, 255, 0.1);
+    }
+  }
+  .c10-divider {
+    margin: 0 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.03);
+  }
+  @media (min-width: 768px) {
+    .c10-divider { margin: 0 1.5rem; }
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-divider { border-color: rgba(255, 255, 255, 0.03); }
+  }
+  .c10-back-link { color: #3D83F6; }
+  .c10-back-link:hover { color: #2b6de0; }
+  .c10-card {
+    position: relative;
+    border-radius: 1.75rem;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    background: rgba(225, 230, 240, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(50px) saturate(140%);
+    -webkit-backdrop-filter: blur(50px) saturate(140%);
+  }
+  .c10-card > * { position: relative; z-index: 1; }
+  .c10-card::before {
+    content: '';
+    position: absolute;
+    inset: -30px;
+    background: linear-gradient(135deg, #3D83F6 0%, transparent 60%);
+    filter: blur(50px);
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.25s ease;
+  }
+  .c10-card:hover { border-color: rgba(61, 131, 246, 0.1); }
+  .c10-card:hover::before { opacity: 0.15; }
+  @media (prefers-color-scheme: dark) {
+    .c10-card {
+      background: rgba(255, 255, 255, 0.025);
+      border-color: rgba(255, 255, 255, 0.07);
+      box-shadow: none;
+      backdrop-filter: blur(50px);
+      -webkit-backdrop-filter: blur(50px);
+    }
+    .c10-card:hover { border-color: rgba(255, 255, 255, 0.1); }
+    .c10-card:hover::before { opacity: 0.12; }
+  }
+  .group:hover .c10-card-title { color: #3D83F6; }
+</style>

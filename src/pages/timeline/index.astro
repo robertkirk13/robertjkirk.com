@@ -1,76 +1,313 @@
 ---
-// src/pages/writing/index.astro
 import { getCollection } from "astro:content";
-import TimelineEntry from "../../components/TimelineEntry.astro";
 import Layout from "../../layouts/Layout.astro";
 
-// Get all blog posts and sort by date
-const posts = await getCollection("timeline");
-const sortedPosts = posts.sort(
+const timelineEntries = await getCollection("timeline");
+const sortedTimeline = timelineEntries.sort(
   (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
 );
 ---
 
 <Layout>
-  <div class="min-h-screen p-4 md:p-8 transition-all">
-    <div
-      class="bg-white dark:bg-black rounded-3xl mx-auto max-w-3xl p-6 md:p-12 shadow-sm border border-gray-200 dark:border-neutral-900"
-    >
-      <!-- Header with Back Link -->
+  <div class="min-h-screen c10-bg flex flex-col">
+    <div class="flex-grow flex flex-col items-center px-4 md:px-6 py-6">
+      <div class="c10-island w-full max-w-3xl mt-8 md:mt-16">
 
-      <!-- Blog Header -->
-      <header class="mb-12 text-gray-900 dark:text-neutral-100">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="36"
-          height="36"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-list"
-          ><path d="M3 12h.01"></path><path d="M3 18h.01"></path><path
-            d="M3 6h.01"></path><path d="M8 12h13"></path><path d="M8 18h13"
-          ></path><path d="M8 6h13"></path></svg
-        >
+        <!-- Header -->
+        <div class="px-4 md:px-6 pt-4 md:pt-6 pb-5">
+          <a href="/" class="group inline-flex items-center gap-1 text-xs font-medium c10-back-link mb-4">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-0.5 transition-transform">
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+            <span>Home</span>
+          </a>
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+            Timeline
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-neutral-400 mt-1">
+            My experiences and projects
+          </p>
+        </div>
 
-        <h1 class="text-4xl font-bold mt-2">Timeline</h1>
-        <p class="text-lg text-gray-600 dark:text-neutral-500 mt-2">
-          My experiences and projects
-        </p>
-      </header>
+        <div class="c10-divider"></div>
 
-      <!-- Blog Posts Grid -->
-      <div class="space-y-4">
-        {
-          sortedPosts.map((post, index) => (
-            // <article class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-md transition-all">
-            //   <a href={`/writing/${post.slug}`} class="block">
-            //     <div class="flex items-center gap-2 text-sm text-gray-500 mb-3">
-            //       <span>{post.data.formattedDate}</span>
-            //       <span class="inline-block w-1.5 h-1.5 rounded-full bg-gray-500"></span>
-            //       <span>{post.data.readingTime} min read</span>
-            //     </div>
-            //     <h2 class="text-2xl font-medium text-gray-900 mb-3 hover:text-blue-600 transition-colors">
-            //       {post.data.title}
-            //     </h2>
-            //     <p class="text-gray-600">
-            //       {post.data.description}
-            //     </p>
-            //   </a>
-            // </article>
-            <TimelineEntry
-              title={post.data.title}
-              description={post.data.description}
-              tags={post.data.tags}
-              href={`/timeline/${post.slug}`}
-              featuredText={post.data.featuredMessage}
-            />
-          ))
-        }
+        <!-- Timeline -->
+        <div class="px-4 md:px-6 py-4">
+          <div class="tl-container">
+            {sortedTimeline.map((entry, index) => (
+              <a href={`/timeline/${entry.slug}`} class="group block tl-entry">
+                <!-- Dot -->
+                <div class="tl-dot-wrap">
+                  {entry.data.featuredMessage ? (
+                    <span class="tl-dot-active">
+                      <span class="tl-dot-ping"></span>
+                      <span class="tl-dot-solid-active"></span>
+                    </span>
+                  ) : (
+                    <span class="tl-dot"></span>
+                  )}
+                </div>
+
+                <!-- Content -->
+                <div class="tl-content">
+                  <div class="tl-date">{entry.data.formattedDate}</div>
+                  {entry.data.featuredMessage && (
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                      <span class="text-xs font-bold text-green-500 uppercase tracking-widest">{entry.data.featuredMessage}</span>
+                    </div>
+                  )}
+                  <h3 class="text-base font-bold text-gray-900 dark:text-white transition-colors leading-snug tl-title" transition:name={`title-${entry.slug}`}>
+                    {entry.data.title}
+                  </h3>
+                  {entry.data.description && (
+                    <p class="text-sm text-gray-500 dark:text-neutral-400 mt-1.5 leading-relaxed">
+                      {entry.data.description}
+                    </p>
+                  )}
+                  {entry.data.tags && entry.data.tags.length > 0 && (
+                    <div class="flex items-center gap-2 mt-3">
+                      {entry.data.tags.map((tag: string, i: number) => (
+                        <>
+                          <span class="text-xs text-gray-400 dark:text-neutral-500">{tag}</span>
+                          {i < entry.data.tags.length - 1 && (
+                            <span class="inline-block w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-600"></span>
+                          )}
+                        </>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 md:px-8 pt-3 pb-4 flex items-center justify-between">
+          <a href="/" class="group flex items-center gap-1 text-xs text-gray-500 dark:text-neutral-400 transition-colors c10-footer-link">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-0.5 transition-transform">
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+            <span class="font-medium">Home</span>
+          </a>
+        </div>
+
       </div>
+    </div>
+
+    <!-- RK logo pinned bottom center -->
+    <div class="group/bottom w-full flex justify-center pb-3 relative">
+      <span class="c10-copyright">Copyright &copy; 2026 Robert Kirk</span>
+      <a href="/" aria-label="home" class="inline-block c10-logo-link">
+        <svg width="42" height="28" viewBox="0 0 949 602" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g clip-path="url(#c10clip)">
+            <path d="M398.411 408.5C437.984 391.325 468.532 366.53 490.056 334.115C511.58 301.7 522.328 263.149 522.3 218.46C522.3 173.716 511.689 135.007 490.468 102.331C469.246 69.6555 439.028 44.4349 399.812 26.6692C360.5 8.82119 314.177 -0.0684959 260.841 0.000150378H0V113.514H252.929C294.81 113.514 326.656 122.547 348.468 140.615C370.28 158.683 381.173 184.631 381.145 218.46C381.145 251.726 370.253 277.516 348.468 295.831C326.683 314.146 294.837 323.324 252.929 323.365H0V602H139.404V434.325H267.62L383.762 602H533.488L398.411 408.5Z" fill="#3D83F6"></path>
+            <path d="M684.821 268.297L934.351 0H779.495L561.097 230.342C559.304 277.708 546.365 319.864 522.609 355.656C504.974 382.114 482.117 404.693 455.442 422.01L490.859 472.712L593.753 365.5L786.479 602H949.103L684.821 268.297Z" fill="#3D83F6"></path>
+            <path d="M490.756 472.712L455.339 422.01C482.014 404.693 504.87 382.114 522.506 355.656C546.262 319.864 559.201 277.77 560.994 230.342C560.994 230.342 591.219 356.933 490.756 472.712Z" fill="#3D83F6"></path>
+          </g>
+          <defs><clipPath id="c10clip"><rect width="949" height="602" fill="white"></rect></clipPath></defs>
+        </svg>
+      </a>
     </div>
   </div>
 </Layout>
+
+<style>
+  :global([aria-label="rk logo"]) { display: none !important; }
+  :global(footer) { display: none !important; }
+  :global(html) {
+    background: linear-gradient(180deg, #eff6ff 0%, #f0f4ff 30%, #f8fafc 60%, #f1f5f9 100%) !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(html) {
+      background: linear-gradient(180deg, #0a0a0a 0%, #0c0c0c 30%, #0a0a0a 60%, #080808 100%) !important;
+    }
+  }
+  .c10-bg {
+    background: linear-gradient(180deg, #eff6ff 0%, #f0f4ff 30%, #f8fafc 60%, #f1f5f9 100%);
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-bg {
+      background: linear-gradient(180deg, #0a0a0a 0%, #0c0c0c 30%, #0a0a0a 60%, #080808 100%);
+    }
+  }
+  .c10-island {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border-radius: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.02),
+      0 4px 16px rgba(0, 0, 0, 0.03),
+      0 16px 48px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-island {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(40px) saturate(150%);
+      -webkit-backdrop-filter: blur(40px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.3),
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        0 16px 48px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+    }
+  }
+  .c10-logo-link { transition: opacity 0.15s ease; }
+  .c10-logo-link:hover { opacity: 0.7; }
+  .c10-copyright {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    font-size: 11px;
+    color: transparent;
+    transition: color 0.3s ease;
+    user-select: none;
+  }
+  .group\/bottom:hover .c10-copyright {
+    color: rgba(0, 0, 0, 0.2);
+  }
+  @media (prefers-color-scheme: dark) {
+    .group\/bottom:hover .c10-copyright {
+      color: rgba(255, 255, 255, 0.1);
+    }
+  }
+  .c10-divider {
+    margin: 0 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.03);
+  }
+  @media (min-width: 768px) {
+    .c10-divider { margin: 0 1.5rem; }
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-divider { border-color: rgba(255, 255, 255, 0.03); }
+  }
+  .c10-back-link { color: #3D83F6; }
+  .c10-back-link:hover { color: #2b6de0; }
+  .c10-footer-link:hover { color: #3D83F6; }
+
+  /* ── Timeline layout ── */
+  .tl-container {
+    position: relative;
+    padding-left: 28px;
+  }
+  /* Vertical line */
+  .tl-container::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 1px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .tl-container::before {
+      background: rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  /* Each entry */
+  .tl-entry {
+    position: relative;
+    padding-bottom: 28px;
+  }
+  .tl-entry:last-child {
+    padding-bottom: 0;
+  }
+
+  /* Dot wrapper — positions dot on the line */
+  .tl-dot-wrap {
+    position: absolute;
+    left: -28px;
+    top: 6px;
+    width: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Default dot */
+  .tl-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.12);
+    transition: background 0.2s ease;
+  }
+  .group:hover .tl-dot {
+    background: #3D83F6;
+  }
+  @media (prefers-color-scheme: dark) {
+    .tl-dot {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .group:hover .tl-dot {
+      background: #3D83F6;
+    }
+  }
+
+  /* Active dot (featured/current) */
+  .tl-dot-active {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 10px;
+    height: 10px;
+  }
+  .tl-dot-ping {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #4ade80;
+    opacity: 0.5;
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  .tl-dot-solid-active {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4ade80;
+  }
+  @keyframes ping {
+    75%, 100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+
+  /* Content area */
+  .tl-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Date label */
+  .tl-date {
+    font-size: 11px;
+    font-weight: 500;
+    color: #9ca3af;
+    margin-bottom: 4px;
+    letter-spacing: 0.01em;
+  }
+  @media (prefers-color-scheme: dark) {
+    .tl-date {
+      color: #525252;
+    }
+  }
+
+  /* Title hover */
+  .group:hover .tl-title {
+    color: #3D83F6;
+  }
+</style>
