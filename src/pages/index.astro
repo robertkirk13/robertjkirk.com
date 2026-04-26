@@ -47,6 +47,7 @@ const topPosts = sortedPosts.slice(0, 2);
             {topPosts.map((post, index) => (
               <a
                 href={`/writing/${post.slug}`}
+                data-astro-prefetch="viewport"
                 class="group block c10-card"
               >
                 <div class="p-5 md:p-6 flex flex-col h-full">

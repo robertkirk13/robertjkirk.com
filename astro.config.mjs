@@ -10,7 +10,10 @@ import rehypeKatex from "rehype-katex";
 
 // https://astro.build/config
 export default defineConfig({
-  prefetch: true,
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: "hover",
+  },
   site: "https://robertjkirk.com",
   integrations: [react(), tailwind(), mdx()],
   markdown: {

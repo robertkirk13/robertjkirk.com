@@ -1,7 +1,7 @@
 import { z, defineCollection } from "astro:content";
 
 const blog = defineCollection({
-  type: "content", // This is important!
+  type: "content", // This is important for content collections
   schema: ({ image }) =>
     z.object({
       title: z.string(),
@@ -13,6 +13,7 @@ const blog = defineCollection({
       tags: z.array(z.string()).optional(),
       featuredMessage: z.string().optional(),
       category: z.enum(["Interactive", "Philosophy", "Projects"]).optional(),
+      series: z.string().optional(),
     }),
 });
 

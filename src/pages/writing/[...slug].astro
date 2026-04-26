@@ -3,20 +3,41 @@
 import { getCollection } from "astro:content";
 import BlogPostLayout from "../../layouts/BlogPostLayout.astro";
 
-// Generate all blog post pages
 export async function getStaticPaths() {
   const blogEntries = await getCollection("blog");
-  return blogEntries.map((entry) => ({
-    params: { slug: entry.slug },
-    props: { entry },
-  }));
+
+  return blogEntries.map((entry) => {
+    const series = entry.data.series;
+    let prev = null;
+    let next = null;
+
+    if (series) {
+      const seriesPosts = blogEntries
+        .filter((e) => e.data.series === series)
+        .sort(
+          (a, b) =>
+            new Date(a.data.date).getTime() - new Date(b.data.date).getTime(),
+        );
+      const i = seriesPosts.findIndex((e) => e.slug === entry.slug);
+      prev = seriesPosts[i - 1] ?? null;
+      next = seriesPosts[i + 1] ?? null;
+    }
+
+    return {
+      params: { slug: entry.slug },
+      props: {
+        entry,
+        prev: prev ? { slug: prev.slug, title: prev.data.title } : null,
+        next: next ? { slug: next.slug, title: next.data.title } : null,
+      },
+    };
+  });
 }
 
-// Get the blog post data
-const { entry } = Astro.props;
+const { entry, prev, next } = Astro.props;
 const { Content } = await entry.render();
 ---
 
-<BlogPostLayout postData={{...entry.data, slug: entry.slug}}>
+<BlogPostLayout postData={{...entry.data, slug: entry.slug}} prev={prev} next={next}>
   <Content />
 </BlogPostLayout>

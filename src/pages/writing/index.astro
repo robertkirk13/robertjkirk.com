@@ -41,6 +41,7 @@ const sortedPosts = posts.sort(
             {sortedPosts.map((post, index) => (
               <a
                 href={`/writing/${post.slug}`}
+                data-astro-prefetch="viewport"
                 data-category={post.data.category || ""}
                 class="post-item group block c10-card"
               >

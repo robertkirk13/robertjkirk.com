@@ -17,7 +17,11 @@ interface PostData {
   coverImage?: ImageMetadata;
 }
 
-const { postData } = Astro.props;
+const { postData, prev, next } = Astro.props as {
+  postData: PostData;
+  prev?: { slug: string; title: string } | null;
+  next?: { slug: string; title: string } | null;
+};
 
 const siteUrl = "https://robertjkirk.com";
 const defaultImage = `${siteUrl}/images/default-image.png`;
@@ -88,12 +92,18 @@ if (pathname.startsWith("/writing")) {
             </div>
           </div>
 
-          <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-neutral-500 mb-2">
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400 dark:text-neutral-500 mb-2">
             <span>Robert Kirk</span>
             <span class="inline-block w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-600"></span>
             <time datetime={postData.date}>{postData.formattedDate}</time>
             <span class="inline-block w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-600"></span>
             <span>{postData.readingTime} min read</span>
+            {postData.tags && postData.tags.length > 0 && postData.tags.map((tag: string) => (
+              <>
+                <span class="inline-block w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-600"></span>
+                <span>{tag}</span>
+              </>
+            ))}
           </div>
           <h1
             class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight mb-2"
@@ -106,13 +116,6 @@ if (pathname.startsWith("/writing")) {
               {postData.description}
             </p>
           )}
-          {postData.tags && postData.tags.length > 0 && (
-            <div class="flex flex-wrap gap-2 mt-3">
-              {postData.tags.map((tag: string) => (
-                <span class="c10-tag">{tag}</span>
-              ))}
-            </div>
-          )}
         </div>
 
         <div class="c10-divider"></div>
@@ -123,6 +126,43 @@ if (pathname.startsWith("/writing")) {
             <slot />
           </div>
         </div>
+
+        {(prev || next) && (
+          <div class="px-4 md:px-6 pb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {prev ? (
+                <a
+                  href={`/writing/${prev.slug}`}
+                  data-astro-prefetch="viewport"
+                  class="c10-pn-btn group"
+                >
+                  <div class="c10-pn-label">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-0.5 transition-transform">
+                      <path d="m15 18-6-6 6-6"></path>
+                    </svg>
+                    <span>Previous</span>
+                  </div>
+                  <div class="c10-pn-title">{prev.title}</div>
+                </a>
+              ) : <div class="hidden sm:block" />}
+              {next ? (
+                <a
+                  href={`/writing/${next.slug}`}
+                  data-astro-prefetch="viewport"
+                  class="c10-pn-btn c10-pn-btn-right group"
+                >
+                  <div class="c10-pn-label c10-pn-label-right">
+                    <span>Next</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-0.5 transition-transform">
+                      <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                  </div>
+                  <div class="c10-pn-title c10-pn-title-right">{next.title}</div>
+                </a>
+              ) : <div class="hidden sm:block" />}
+            </div>
+          </div>
+        )}
 
         <!-- Footer -->
         <div class="px-6 md:px-8 pt-3 pb-4 flex items-center justify-between">
@@ -175,6 +215,49 @@ if (pathname.startsWith("/writing")) {
     </div>
   </div>
 </Layout>
+
+<style is:global>
+  /* Inline code: drop Tailwind Typography's literal backticks, add subtle chip style */
+  .prose :not(pre) > code::before,
+  .prose :not(pre) > code::after {
+    content: "" !important;
+  }
+  .prose :not(pre) > code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-weight: 500;
+    font-size: 0.875em;
+    background: rgba(0, 0, 0, 0.05);
+    color: #1f2937;
+    padding: 0.15em 0.4em;
+    border-radius: 0.35rem;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    .prose :not(pre) > code {
+      background: rgba(255, 255, 255, 0.07);
+      color: #e5e7eb;
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+  }
+  /* Fenced code blocks: soften background, no chip */
+  .prose pre {
+    background: rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 0.75rem;
+  }
+  .prose pre code {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    color: inherit;
+  }
+  @media (prefers-color-scheme: dark) {
+    .prose pre {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+  }
+</style>
 
 <style>
   :global([aria-label="rk logo"]) { display: none !important; }
@@ -278,5 +361,54 @@ if (pathname.startsWith("/writing")) {
       background: rgba(255, 255, 255, 0.06);
       color: #9ca3af;
     }
+  }
+
+  /* Prev / Next buttons */
+  .c10-pn-btn {
+    display: block;
+    padding: 14px 18px;
+    border-radius: 1.25rem;
+    background: rgba(225, 230, 240, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+  .c10-pn-btn:hover {
+    background: rgba(61, 131, 246, 0.06);
+    border-color: rgba(61, 131, 246, 0.2);
+  }
+  .c10-pn-btn-right { text-align: right; }
+  .c10-pn-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  .c10-pn-label-right { justify-content: flex-end; }
+  .c10-pn-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.35;
+  }
+  .c10-pn-btn:hover .c10-pn-title {
+    color: #3D83F6;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-pn-btn {
+      background: rgba(255, 255, 255, 0.025);
+      border-color: rgba(255, 255, 255, 0.07);
+    }
+    .c10-pn-btn:hover {
+      background: rgba(61, 131, 246, 0.08);
+      border-color: rgba(61, 131, 246, 0.25);
+    }
+    .c10-pn-label { color: #9ca3af; }
+    .c10-pn-title { color: #f3f4f6; }
   }
 </style>
