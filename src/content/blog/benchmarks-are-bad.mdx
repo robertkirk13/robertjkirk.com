@@ -1,0 +1,74 @@
+---
+title: "Benchmarks Are Bad"
+date: "2026-05-28"
+formattedDate: "May 28, 2026"
+description: "When a benchmark becomes important enough to optimize for, it stops being a neutral measurement and starts shaping the system it was meant to evaluate."
+readingTime: 5
+tags: ["benchmarks", "ai", "metrics"]
+---
+
+Bad benchmarks are easy to dismiss. Good benchmarks are more dangerous.
+
+A benchmark turns messy reality into a target. At first, that is useful. It gives people a way to compare, improve, and hold claims accountable. But once the target matters, the thing being measured starts adapting to it.
+
+That is when the benchmark stops being just a measurement and becomes an incentive.
+
+## Benchmarks Are Proxies
+
+There is always some larger thing we care about: whether a product is useful, whether a school is good, whether a team is effective, whether a system is actually better. Those questions are too large to measure directly, so we replace them with smaller ones. How did the product perform on this test? How did students score on this exam? How many tickets did the team close?
+
+The benchmark becomes a stand-in for the thing we actually care about.
+
+That is not a flaw. Without benchmarks, we are stuck with demos, anecdotes, marketing, and vibes. A benchmark gives everyone something repeatable. It lets buyers compare products and lets builders know whether they are making progress.
+
+That is why benchmarks are necessary. It is also why they become powerful.
+
+## Benchmarks Are Not Magic Scores
+
+CPU benchmarks make this easy to see. Say you want to buy the faster CPU. That sounds simple until you ask the obvious follow-up: faster at what?
+
+A CPU is not fast in the abstract. It is fast relative to work. Compiling code, rendering video, running games, and keeping a laptop responsive under heat and battery limits are different workloads.
+
+That is why CPU benchmarks exist. They give reviewers, buyers, and chip companies a shared workload for comparison. But the chart hides the important part: the benchmark is not the number. The benchmark is the work being performed.
+
+Once that workload becomes public and important, companies can optimize for it directly. Compiler teams can tune around benchmark programs. Platform teams can adjust boost behavior, power limits, and thermal policy around the benchmark's run pattern. Microarchitecture teams can study which instruction mixes, cache behavior, branch patterns, and memory access patterns move the score.
+
+Some of that work improves real performance. Some of it serves only to improve the benchmark. Either way, the benchmark is no longer just observing the product. It is helping define what the product should become.
+
+## The Benchmark Becomes The System
+
+That is basically Goodhart's law: when a measure becomes a target, it stops being a good measure. But the usual framing makes the problem sound like bad metrics corrupt good systems. The more interesting problem is that good metrics are the ones people actually obey.
+
+A successful benchmark becomes a public workload. A public workload becomes a target. A target becomes part of the design process.
+
+That is not automatically cheating. Usually, it is engineering. If a benchmark reflects real user work, then making that benchmark faster makes the product better. The number goes up, and reality goes up with it.
+
+The problem is that benchmarks are never the whole world. They choose what counts, what does not count, and what can be ignored. A benchmark has to compress reality into something measurable, and that compression always leaves things out.
+
+Once a benchmark becomes trusted, it can start shaping behavior beyond the original test. Schools teach toward exams. Support teams optimize for tickets closed. Social platforms optimize for engagement. Companies optimize for metrics that are easy to track, even when the harder-to-measure reality is what users actually care about.
+
+That is why good benchmarks are dangerous. They are trusted enough to change what gets built.
+
+## The Same Pattern In AI
+
+AI coding benchmarks are the current example. SWE-bench was a real improvement over toy coding tests because it used real GitHub issues, real repositories, sandboxes, and test-based scoring. It asked a better question: can an agent produce a patch that resolves the issue?
+
+But once SWE-bench mattered, it also became a target. SWE-bench and SWE-bench Verified are public benchmarks. Even if an agent is not handed the tests during a run, the tasks, repos, format, harness, scoring rule, and leaderboard are visible. Labs can train, prompt, scaffold, and tool around that shape without literally leaking the answer key.
+
+That is why benchmarks keep changing. The benchmark measures progress, becomes a target, gets optimized against, and then loses some of the meaning people originally attached to the score. MMLU, HumanEval, SWE-bench, and whatever comes next all follow some version of that cycle.
+
+The risk is not only that agents can cheat. It is that the development loop bends toward what the benchmark rewards. If the benchmark rewards passing tests in contained repos, models get better at passing tests in contained repos. If it ignores judgment, taste, maintainability, product context, or knowing when not to make a change, those traits become harder to value.
+
+Benchmarks do not only measure systems. They shape what systems become.
+
+## The Leaderboard Is Not The Product
+
+The fix is not to stop benchmarking. The fix is to remember what the benchmark is: a proxy, not the goal.
+
+Use benchmarks, but do not let the leaderboard become the product. Use many benchmarks, not one. Keep some public so the field can compare progress, and keep some closed so the target cannot be fully trained against. Compare against real outcomes. Most importantly, keep asking whether the benchmark maps to the thing you actually care about.
+
+Benchmarks are necessary because reality is too messy to compare directly. They are dangerous because once they matter, systems start bending around them.
+
+A bad benchmark gets ignored. A good benchmark gets obeyed.
+
+The hard part is making sure it still deserves to be.
