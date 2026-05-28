@@ -33,10 +33,7 @@ const ogImage = postData.coverImage
 const pathname = Astro.url.pathname;
 let backHref = "/";
 let backLabel = "Home";
-if (pathname.startsWith("/writing")) {
-  backHref = "/writing";
-  backLabel = "Writing";
-} else if (pathname.startsWith("/timeline")) {
+if (pathname.startsWith("/timeline")) {
   backHref = "/timeline";
   backLabel = "Timeline";
 } else if (pathname.startsWith("/legal")) {

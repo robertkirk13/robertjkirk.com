@@ -9,14 +9,15 @@ const sortedPosts = posts.sort(
 );
 
 const topPosts = sortedPosts.slice(0, 2);
+const restPosts = sortedPosts.slice(2);
 ---
 
 <Layout>
   <div class="min-h-screen c10-bg flex flex-col">
 
-    <!-- Island centered vertically -->
-    <div class="flex-grow flex flex-col items-center justify-center px-2 md:px-6 py-6">
-      <div class="c10-island w-full max-w-3xl">
+    <!-- Single island, centered when content fits, top-aligned when it overflows -->
+    <div class="flex-grow flex flex-col items-center px-2 md:px-6 py-6">
+      <div class="c10-island w-full max-w-3xl my-auto">
 
         <!-- Header -->
         <div class="relative px-4 md:px-6 pt-4 md:pt-6 pb-5">
@@ -50,8 +51,8 @@ const topPosts = sortedPosts.slice(0, 2);
                 data-astro-prefetch="viewport"
                 class="group block c10-card"
               >
-                <div class="p-5 md:p-6 flex flex-col h-full">
-                  <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-neutral-500 mb-2">
+                <div class="p-4 md:p-5 flex flex-col h-full">
+                  <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-neutral-500 mb-1.5">
                     <span>{post.data.formattedDate}</span>
                     <span class="inline-block w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-600"></span>
                     <span>{post.data.readingTime} min read</span>
@@ -60,11 +61,11 @@ const topPosts = sortedPosts.slice(0, 2);
                     {post.data.title}
                   </h3>
                   {post.data.description && (
-                    <p class="text-sm text-gray-500 dark:text-neutral-400 mt-2 leading-relaxed">
+                    <p class="text-sm text-gray-500 dark:text-neutral-400 mt-1.5 leading-relaxed">
                       {post.data.description}
                     </p>
                   )}
-                  <div class="mt-4 flex items-center gap-1 c10-read-link text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div class="mt-2 flex items-center gap-1 c10-read-link text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                     <span>Read</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-0.5 transition-transform">
                       <path d="m9 18 6-6-6-6"></path>
@@ -75,19 +76,56 @@ const topPosts = sortedPosts.slice(0, 2);
             ))}
           </div>
         </div>
+        {restPosts.length > 0 && (
+          <div class="px-4 md:px-6 pt-3 pb-1">
+            <div
+              id="articles-list"
+              class="c10-articles-scroll"
+              data-collapsed="true"
+              data-fade-top="false"
+              data-fade-bottom="false"
+            >
+              {restPosts.map((post) => (
+                <a
+                  href={`/writing/${post.slug}`}
+                  data-astro-prefetch="viewport"
+                  class="group c10-article-row"
+                >
+                  <span class="c10-article-title truncate" transition:name={`title-${post.slug}`}>
+                    {post.data.title}
+                  </span>
+                  <span class="c10-article-meta shrink-0">
+                    <span>{post.data.formattedDate}</span>
+                    {post.data.category && (
+                      <>
+                        <span class="c10-meta-dot"></span>
+                        <span class="c10-category-text">{post.data.category}</span>
+                      </>
+                    )}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
         <!-- Footer row -->
         <div class="px-8 md:px-10 pt-3 pb-4 flex items-center justify-between">
-          <a href="/writing" class="group flex items-center gap-1 text-xs text-gray-500 dark:text-neutral-400 transition-colors c10-footer-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 7v14"></path><path d="M16 12h2"></path><path d="M16 8h2"></path>
-              <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path>
-              <path d="M6 12h2"></path><path d="M6 8h2"></path>
-            </svg>
-            <span class="font-medium">More Writing</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-0.5 transition-transform">
-              <path d="m9 18 6-6-6-6"></path>
-            </svg>
-          </a>
+          {restPosts.length > 3 ? (
+            <button
+              id="articles-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="articles-list"
+              class="group flex items-center gap-1 text-xs text-gray-500 dark:text-neutral-400 transition-colors c10-footer-link"
+            >
+              <span class="font-medium" data-label-shown="Show less" data-label-hidden="More writing">More writing</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="c10-toggle-chevron">
+                <path d="m9 18 6-6-6-6"></path>
+              </svg>
+            </button>
+          ) : (
+            <span></span>
+          )}
           <div class="flex items-center gap-4">
             <a href="https://github.com/robertkirk13" target="_blank" class="c10-social-link">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -148,6 +186,82 @@ const topPosts = sortedPosts.slice(0, 2);
   }
   document.addEventListener('DOMContentLoaded', syncPhotoSize);
   window.addEventListener('resize', syncPhotoSize);
+
+  function measureCollapsedHeight(list: HTMLElement) {
+    const rows = list.querySelectorAll<HTMLElement>('.c10-article-row');
+    if (rows.length === 0) return;
+    const showCount = Math.min(3, rows.length);
+    const last = rows[showCount - 1];
+    const listRect = list.getBoundingClientRect();
+    const lastRect = last.getBoundingClientRect();
+    // bottom of third row relative to list top (already accounts for scroll position)
+    const h = lastRect.bottom - listRect.top + list.scrollTop;
+    list.style.setProperty('--collapsed-h', h + 'px');
+  }
+
+  function measureExpandedHeight(list: HTMLElement) {
+    const island = list.closest('.c10-island') as HTMLElement | null;
+    if (!island) return;
+    const islandH = island.getBoundingClientRect().height;
+    const listH = list.getBoundingClientRect().height;
+    const otherH = islandH - listH;
+    // Available room for the list = 80vh of viewport minus everything else in the island
+    const maxList = 0.8 * window.innerHeight - otherH;
+    list.style.setProperty('--expanded-h', Math.max(120, maxList) + 'px');
+  }
+
+  function updateFadeMasks(list: HTMLElement) {
+    const collapsed = list.dataset.collapsed === 'true';
+    if (collapsed) {
+      list.dataset.fadeTop = 'false';
+      list.dataset.fadeBottom = 'false';
+      return;
+    }
+    const atTop = list.scrollTop <= 1;
+    const atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
+    list.dataset.fadeTop = atTop ? 'false' : 'true';
+    list.dataset.fadeBottom = atBottom ? 'false' : 'true';
+  }
+
+  function wireArticlesToggle() {
+    const btn = document.getElementById('articles-toggle') as HTMLButtonElement | null;
+    const list = document.getElementById('articles-list') as HTMLElement | null;
+    if (!list || list.dataset.wired === '1') return;
+    list.dataset.wired = '1';
+
+    measureCollapsedHeight(list);
+    measureExpandedHeight(list);
+    updateFadeMasks(list);
+
+    list.addEventListener('scroll', () => updateFadeMasks(list), { passive: true });
+    window.addEventListener('resize', () => {
+      measureCollapsedHeight(list);
+      measureExpandedHeight(list);
+      updateFadeMasks(list);
+    });
+
+    if (btn) {
+      const label = btn.querySelector('[data-label-shown]') as HTMLElement | null;
+      btn.addEventListener('click', () => {
+        const isCollapsed = list.dataset.collapsed === 'true';
+        if (isCollapsed) {
+          list.dataset.collapsed = 'false';
+          btn.setAttribute('aria-expanded', 'true');
+          if (label) label.textContent = label.dataset.labelShown || 'Show less';
+        } else {
+          list.dataset.collapsed = 'true';
+          btn.setAttribute('aria-expanded', 'false');
+          if (label) label.textContent = label.dataset.labelHidden || 'More writing';
+          // scroll back to top when collapsing so the third row is the last visible
+          list.scrollTop = 0;
+        }
+        // After the transition settles, re-evaluate fades.
+        setTimeout(() => updateFadeMasks(list), 420);
+      });
+    }
+  }
+  document.addEventListener('DOMContentLoaded', wireArticlesToggle);
+  document.addEventListener('astro:page-load', wireArticlesToggle);
 </script>
 
 <style>
@@ -216,6 +330,9 @@ const topPosts = sortedPosts.slice(0, 2);
       inset 0 1px 0 rgba(255, 255, 255, 0.8),
       inset 0 -1px 0 rgba(255, 255, 255, 0.2);
     overflow: hidden;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
   }
   @media (prefers-color-scheme: dark) {
     .c10-island {
@@ -381,6 +498,127 @@ const topPosts = sortedPosts.slice(0, 2);
   }
   .c10-footer-link:hover {
     color: #3D83F6;
+  }
+
+  /* ── Article scroll region — collapsed shows 3 rows, expanded fills island ── */
+  .c10-articles-scroll {
+    --collapsed-h: 138px; /* fallback before JS measures */
+    --expanded-h: 80vh;   /* JS recomputes to (island 80vh - other content) */
+    --fade: 18px;
+    max-height: var(--expanded-h);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                mask-image 0.2s ease,
+                -webkit-mask-image 0.2s ease;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  }
+  .c10-articles-scroll[data-collapsed="true"] {
+    max-height: var(--collapsed-h);
+    overflow-y: hidden;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-articles-scroll {
+      scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    }
+  }
+  .c10-articles-scroll::-webkit-scrollbar { width: 6px; }
+  .c10-articles-scroll::-webkit-scrollbar-track { background: transparent; }
+  .c10-articles-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-articles-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+
+  /* Blur fade masks at top/bottom — only when there is content above/below */
+  .c10-articles-scroll[data-fade-top="false"][data-fade-bottom="false"] {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .c10-articles-scroll[data-fade-top="true"][data-fade-bottom="false"] {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, black var(--fade), black 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, black var(--fade), black 100%);
+  }
+  .c10-articles-scroll[data-fade-top="false"][data-fade-bottom="true"] {
+    -webkit-mask-image: linear-gradient(to bottom, black 0, black calc(100% - var(--fade)), transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0, black calc(100% - var(--fade)), transparent 100%);
+  }
+  .c10-articles-scroll[data-fade-top="true"][data-fade-bottom="true"] {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, black var(--fade), black calc(100% - var(--fade)), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, black var(--fade), black calc(100% - var(--fade)), transparent 100%);
+  }
+
+  /* ── Single-line article rows — animated hover with card-like bg ── */
+  .c10-article-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    /* Horizontal padding matches the footer's px-8 md:px-10 minus the wrapper's px-4 md:px-6 */
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    transition: border-radius 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.2s ease,
+                border-color 0.2s ease;
+  }
+  .c10-article-row:hover {
+    border-radius: 1.25rem;
+    background: rgba(225, 230, 240, 0.45);
+    border-color: rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-article-row:hover {
+      background: rgba(255, 255, 255, 0.035);
+      border-color: rgba(255, 255, 255, 0.07);
+    }
+  }
+  .c10-article-title {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: rgb(17, 24, 39);
+    transition: color 0.15s ease;
+    min-width: 0;
+  }
+  .c10-article-row:hover .c10-article-title {
+    color: #3D83F6;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-article-title {
+      color: rgb(243, 244, 246);
+    }
+  }
+  .c10-article-meta {
+    font-size: 0.75rem;
+    color: rgb(156, 163, 175);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c10-article-meta { color: rgb(115, 115, 115); }
+  }
+  .c10-meta-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 9999px;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  .c10-category-text { color: rgba(61, 131, 246, 0.7); }
+  /* ── Toggle chevron — right when closed, up when open ── */
+  .c10-toggle-chevron {
+    transition: transform 0.25s ease;
+  }
+  #articles-toggle[aria-expanded="true"] .c10-toggle-chevron {
+    transform: rotate(-90deg);
   }
 
   /* ── Social links ── */
