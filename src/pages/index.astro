@@ -8,8 +8,14 @@ const sortedPosts = posts.sort(
   (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
 );
 
-const topPosts = sortedPosts.slice(0, 2);
-const restPosts = sortedPosts.slice(2);
+const featuredPosts = sortedPosts.filter((post) => post.data.featured);
+const featuredSlugs = new Set(featuredPosts.map((post) => post.slug));
+const topPosts = [
+  ...featuredPosts,
+  ...sortedPosts.filter((post) => !featuredSlugs.has(post.slug)),
+].slice(0, 2);
+const topPostSlugs = new Set(topPosts.map((post) => post.slug));
+const restPosts = sortedPosts.filter((post) => !topPostSlugs.has(post.slug));
 ---
 
 <Layout>

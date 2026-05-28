@@ -11,6 +11,7 @@ const blog = defineCollection({
       coverImage: image().optional(),
       readingTime: z.number(),
       tags: z.array(z.string()).optional(),
+      featured: z.boolean().optional(),
       featuredMessage: z.string().optional(),
       category: z.enum(["Interactive", "Philosophy", "Projects"]).optional(),
       series: z.string().optional(),
